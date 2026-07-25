@@ -62,12 +62,8 @@ export class InquiryController {
   ): Promise<void> => {
     try {
       const { refCode } = req.params;
-      const accessToken = req.query.token as string | undefined;
-      const inquiry = await InquiryService.trackInquiry(refCode, accessToken);
-      res.status(200).json({
-        success: true,
-        data: inquiry,
-      });
+      const inquiry = await InquiryService.trackInquiry(refCode);
+      res.status(200).json({ success: true, data: inquiry });
     } catch (error) {
       next(error);
     }

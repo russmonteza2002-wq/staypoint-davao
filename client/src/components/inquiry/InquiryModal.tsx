@@ -2,17 +2,31 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Send, CheckCircle, Copy, Calendar, User, Mail, Phone, ShieldCheck, KeyRound } from 'lucide-react';
+import {
+  Send,
+  CheckCircle,
+  Copy,
+  Calendar,
+  User,
+  Mail,
+  Phone,
+  ShieldCheck,
+  KeyRound,
+} from 'lucide-react';
 import { Modal } from '../ui/Modal';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
 import { InquiryService } from '../../services/inquiryService';
 import { useToast } from '../../context/ToastContext';
 
-// Strict regex requiring valid TLD domain extension (.com, .ph, .net, .org, etc.)
+// ---------------------------------------------------------------------------
+// Validation constants
+// ---------------------------------------------------------------------------
+
+/** Requires a valid TLD domain extension (.com, .ph, .net, .org, etc.) */
 const VALID_EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
-// List of disposable, temporary, and test email domains to block
+/** Disposable / temporary email domains that are not allowed */
 const DISPOSABLE_DOMAINS = [
   'mailinator.com',
   'tempmail.com',
@@ -28,7 +42,7 @@ const DISPOSABLE_DOMAINS = [
   'test.com',
 ];
 
-// Suspicious / keyboard mash patterns in email usernames
+/** Obvious keyboard-mash / fake usernames to reject */
 const SUSPICIOUS_PATTERNS = [
   /^asdf/i,
   /^qwerty/i,
@@ -39,44 +53,47 @@ const SUSPICIOUS_PATTERNS = [
   /^none/i,
 ];
 
-// Valid Philippine phone number regex (+63 9XXXXXXXXX or 09XXXXXXXXX)
+/** Valid Philippine mobile number (+63 9XXXXXXXXX or 09XXXXXXXXX) */
 const PH_PHONE_REGEX = /^(?:\+63|0)9\d{9}$/;
+
+// ---------------------------------------------------------------------------
+// Zod schema
+// ---------------------------------------------------------------------------
 
 const inquirySchema = z.object({
   userName: z.string().trim().min(2, 'Name is required (at least 2 characters)'),
+
   userEmail: z
     .string()
     .trim()
     .toLowerCase()
     .email('Please enter a valid email address format')
-    .refine((email: string) => VALID_EMAIL_REGEX.test(email), {
-      message: 'Please enter a valid email address with a domain extension (e.g. name@gmail.com)',
+    .refine((email) => VALID_EMAIL_REGEX.test(email), {
+      message: 'Please enter a valid email with a domain extension (e.g. name@gmail.com)',
     })
     .refine(
-      (email: string) => {
+      (email) => {
         const domain = email.split('@')[1];
         return domain ? !DISPOSABLE_DOMAINS.includes(domain) : true;
       },
-      {
-        message: 'Disposable or temporary email addresses are not allowed. Please use your main active email.',
-      }
+      { message: 'Disposable or temporary email addresses are not allowed.' }
     )
     .refine(
-      (email: string) => {
-        const username = email.split('@')[0] || '';
-        return !SUSPICIOUS_PATTERNS.some((pattern) => pattern.test(username));
+      (email) => {
+        const username = email.split('@')[0] ?? '';
+        return !SUSPICIOUS_PATTERNS.some((p) => p.test(username));
       },
-      {
-        message: 'Please provide a legitimate personal or work email address.',
-      }
+      { message: 'Please provide a legitimate personal or work email address.' }
     ),
+
   userPhone: z
     .string()
     .trim()
-    .min(1, 'Active phone number is required so the property manager can contact you')
-    .refine((phone: string) => PH_PHONE_REGEX.test(phone.replace(/\s+/g, '')), {
-      message: 'Please enter a valid Philippine mobile number (e.g. 09171234567 or +639171234567)',
+    .min(1, 'Phone number is required so the manager can contact you')
+    .refine((phone) => PH_PHONE_REGEX.test(phone.replace(/\s+/g, '')), {
+      message: 'Please enter a valid PH mobile number (e.g. 09171234567 or +639171234567)',
     }),
+
   preferredViewingDate: z
     .string()
     .optional()
@@ -84,19 +101,21 @@ const inquirySchema = z.object({
     .refine(
       (val) => {
         if (!val) return true;
-        const viewingDate = new Date(val);
         const today = new Date();
         today.setHours(0, 0, 0, 0);
-        return viewingDate >= today;
+        return new Date(val) >= today;
       },
-      {
-        message: 'Preferred viewing date cannot be in the past. Please select today or a future date.',
-      }
+      { message: 'Preferred viewing date cannot be in the past.' }
     ),
+
   message: z.string().trim().min(10, 'Message must be at least 10 characters long'),
 });
 
 type InquiryFormData = z.infer<typeof inquirySchema>;
+
+// ---------------------------------------------------------------------------
+// Component types
+// ---------------------------------------------------------------------------
 
 interface InquiryModalProps {
   isOpen: boolean;
@@ -105,6 +124,38 @@ interface InquiryModalProps {
   roomTitle?: string;
 }
 
+type PendingData = {
+  referenceCode: string;
+  userEmail: string;
+};
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+const RESEND_COOLDOWN_SECONDS = 40;
+
+function startCooldownInterval(
+  setter: React.Dispatch<React.SetStateAction<number>>,
+  ref: React.MutableRefObject<ReturnType<typeof setInterval> | null>
+) {
+  if (ref.current) clearInterval(ref.current);
+  setter(RESEND_COOLDOWN_SECONDS);
+  ref.current = setInterval(() => {
+    setter((prev) => {
+      if (prev <= 1) {
+        clearInterval(ref.current!);
+        return 0;
+      }
+      return prev - 1;
+    });
+  }, 1000);
+}
+
+// ---------------------------------------------------------------------------
+// InquiryModal
+// ---------------------------------------------------------------------------
+
 export const InquiryModal: React.FC<InquiryModalProps> = ({
   isOpen,
   onClose,
@@ -112,108 +163,82 @@ export const InquiryModal: React.FC<InquiryModalProps> = ({
   roomTitle,
 }) => {
   const { showToast } = useToast();
+
+  // Step state
   const [step, setStep] = useState<'FORM' | 'VERIFY' | 'SUCCESS'>('FORM');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // 40-second resend cooldown timer
+  // Pending inquiry data (set after server creates the inquiry)
+  const [pendingData, setPendingData] = useState<PendingData | null>(null);
+
+  // OTP input
+  const [enteredOtp, setEnteredOtp] = useState('');
+
+  // Resend cooldown
   const [resendCooldown, setResendCooldown] = useState(0);
   const [isResending, setIsResending] = useState(false);
   const cooldownRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // Start the 40s countdown whenever we reach the VERIFY step
+  // Minimum allowed date for the viewing date picker
+  const todayMinDate = new Date().toISOString().split('T')[0];
+
+  // React Hook Form
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<InquiryFormData>({ resolver: zodResolver(inquirySchema) });
+
+  // Start 40s countdown whenever the VERIFY step becomes active
   useEffect(() => {
     if (step === 'VERIFY') {
-      setResendCooldown(40);
-      cooldownRef.current = setInterval(() => {
-        setResendCooldown((prev) => {
-          if (prev <= 1) {
-            clearInterval(cooldownRef.current!);
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
+      startCooldownInterval(setResendCooldown, cooldownRef);
     }
     return () => {
       if (cooldownRef.current) clearInterval(cooldownRef.current);
     };
   }, [step]);
 
-  const handleResendCode = async () => {
-    if (!pendingData || resendCooldown > 0) return;
-    setIsResending(true);
-    try {
-      await InquiryService.resendVerificationCode(pendingData.referenceCode);
-      showToast('success', '📬 New Code Sent!', `A fresh 6-digit code has been sent to ${pendingData.userEmail}.`);
-      // Restart the 40s cooldown
-      setResendCooldown(40);
-      cooldownRef.current = setInterval(() => {
-        setResendCooldown((prev) => {
-          if (prev <= 1) {
-            clearInterval(cooldownRef.current!);
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-    } catch (error: any) {
-      showToast('error', 'Resend Failed', error.response?.data?.message || 'Could not resend code.');
-    } finally {
-      setIsResending(false);
-    }
-  };
+  // ---------------------------------------------------------------------------
+  // Handlers
+  // ---------------------------------------------------------------------------
 
-  const [pendingData, setPendingData] = useState<{
-    referenceCode: string;
-    userEmail: string;
-    accessToken: string;
-  } | null>(null);
-
-  const [enteredOtp, setEnteredOtp] = useState('');
-
-  const todayMinDate = new Date().toISOString().split('T')[0];
-
-  const {
-    register,
-    handleSubmit,
-    reset,
-    formState: { errors },
-  } = useForm<InquiryFormData>({
-    resolver: zodResolver(inquirySchema),
-  });
-
+  /** Submit the inquiry form — sends OTP email on success */
   const onSubmit = async (data: InquiryFormData) => {
     setIsSubmitting(true);
     try {
-      const res = await InquiryService.createInquiry({
-        ...data,
-        roomId,
-      });
-
+      const res = await InquiryService.createInquiry({ ...data, roomId });
       setPendingData({
         referenceCode: res.data.referenceCode,
         userEmail: res.data.userEmail,
-        accessToken: res.data.accessToken,
       });
-
       setStep('VERIFY');
-      showToast('success', '📬 Verification Email Sent!', `A 6-digit code has been sent to ${res.data.userEmail}. Please check your inbox.`);
+      showToast(
+        'success',
+        '📬 Verification Email Sent!',
+        `A 6-digit code has been sent to ${res.data.userEmail}. Please check your inbox.`
+      );
     } catch (error: any) {
-      showToast('error', 'Submission Failed', error.response?.data?.message || 'Please check email address and input fields');
+      showToast(
+        'error',
+        'Submission Failed',
+        error.response?.data?.message || 'Please check your email address and input fields.'
+      );
     } finally {
       setIsSubmitting(false);
     }
   };
 
+  /** Verify the OTP code entered by the user */
   const handleVerifyOtp = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!pendingData || !enteredOtp.trim()) return;
-
     setIsSubmitting(true);
     try {
       await InquiryService.verifyInquiryCode(pendingData.referenceCode, enteredOtp.trim());
       setStep('SUCCESS');
-      showToast('success', 'Email Verified!', 'Your inquiry is active and delivered to the property manager.');
+      showToast('success', '✅ Email Verified!', 'Your inquiry is active and sent to the property manager.');
       reset();
     } catch (error: any) {
       showToast('error', 'Verification Failed', error.response?.data?.message || 'Invalid 6-digit code.');
@@ -222,6 +247,22 @@ export const InquiryModal: React.FC<InquiryModalProps> = ({
     }
   };
 
+  /** Resend a fresh OTP code (subject to 40s cooldown) */
+  const handleResendCode = async () => {
+    if (!pendingData || resendCooldown > 0) return;
+    setIsResending(true);
+    try {
+      await InquiryService.resendVerificationCode(pendingData.referenceCode);
+      showToast('success', '📬 New Code Sent!', `A fresh 6-digit code was sent to ${pendingData.userEmail}.`);
+      startCooldownInterval(setResendCooldown, cooldownRef);
+    } catch (error: any) {
+      showToast('error', 'Resend Failed', error.response?.data?.message || 'Could not resend code.');
+    } finally {
+      setIsResending(false);
+    }
+  };
+
+  /** Reset all state and close the modal */
   const handleClose = () => {
     setStep('FORM');
     setPendingData(null);
@@ -229,8 +270,18 @@ export const InquiryModal: React.FC<InquiryModalProps> = ({
     onClose();
   };
 
+  // ---------------------------------------------------------------------------
+  // Render
+  // ---------------------------------------------------------------------------
+
   return (
-    <Modal isOpen={isOpen} onClose={handleClose} title={roomTitle ? `Inquire About ${roomTitle}` : 'Submit Property Inquiry'} maxWidth="lg">
+    <Modal
+      isOpen={isOpen}
+      onClose={handleClose}
+      title={roomTitle ? `Inquire About ${roomTitle}` : 'Submit Property Inquiry'}
+      maxWidth="lg"
+    >
+      {/* ── SUCCESS ─────────────────────────────────────────────────────── */}
       {step === 'SUCCESS' && pendingData ? (
         <div className="space-y-5 text-center py-4">
           <div className="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto shadow-inner">
@@ -238,15 +289,17 @@ export const InquiryModal: React.FC<InquiryModalProps> = ({
           </div>
 
           <div className="space-y-2">
-            <h3 className="text-xl font-extrabold text-slate-900">Email Verified & Inquiry Sent!</h3>
+            <h3 className="text-xl font-extrabold text-slate-900">Email Verified &amp; Inquiry Sent!</h3>
             <p className="text-sm text-slate-600 max-w-md mx-auto">
               Your inquiry has been submitted and is now active. The property manager will reply shortly.
             </p>
           </div>
 
-          {/* Reference Code Box */}
+          {/* Reference code display */}
           <div className="p-4 bg-slate-900 text-white rounded-2xl border border-slate-800 space-y-2">
-            <span className="text-xs uppercase font-bold text-slate-400 tracking-wider">Your Reference Code</span>
+            <span className="text-xs uppercase font-bold text-slate-400 tracking-wider">
+              Your Reference Code
+            </span>
             <div className="flex items-center justify-center gap-3">
               <span className="font-mono text-2xl font-extrabold tracking-widest text-brand-400">
                 {pendingData.referenceCode}
@@ -264,17 +317,20 @@ export const InquiryModal: React.FC<InquiryModalProps> = ({
             </div>
           </div>
 
-          {/* ⚠️ Important Notice — Save your code */}
+          {/* Save reminder notice */}
           <div className="p-4 bg-amber-50 border-2 border-amber-300 rounded-2xl text-left space-y-2">
-            <p className="text-sm font-extrabold text-amber-800 flex items-center gap-2">
+            <p className="text-sm font-extrabold text-amber-800">
               📌 Important — Please Save Your Reference Code!
             </p>
             <p className="text-xs text-amber-700 leading-relaxed">
-              You will need this code <strong>to view replies from the manager</strong> and to send follow-up messages.
+              You will need this code <strong>to view replies from the manager</strong> and to
+              send follow-up messages.
               <br /><br />
-              📸 <strong>Take a screenshot</strong> of this screen, or <strong>write it down</strong> somewhere safe.
+              📸 <strong>Take a screenshot</strong> of this screen, or{' '}
+              <strong>write it down</strong> somewhere safe.
               <br /><br />
-              You can also track your inquiry anytime at:<br />
+              You can also track your inquiry anytime at:
+              <br />
               <strong>staypoint-davao.vercel.app/track-inquiry</strong>
             </p>
           </div>
@@ -290,6 +346,8 @@ export const InquiryModal: React.FC<InquiryModalProps> = ({
             </Button>
           </div>
         </div>
+
+      /* ── VERIFY ─────────────────────────────────────────────────────── */
       ) : step === 'VERIFY' && pendingData ? (
         <form onSubmit={handleVerifyOtp} className="space-y-6 text-center py-2">
           <div className="w-14 h-14 bg-brand-50 text-brand-600 rounded-2xl flex items-center justify-center mx-auto">
@@ -299,20 +357,26 @@ export const InquiryModal: React.FC<InquiryModalProps> = ({
           <div className="space-y-2">
             <h3 className="text-xl font-extrabold text-slate-900">Check Your Email Inbox</h3>
             <p className="text-sm text-slate-600 max-w-sm mx-auto">
-              We sent a <strong>6-digit verification code</strong> to:<br />
+              We sent a <strong>6-digit verification code</strong> to:
+              <br />
               <span className="font-bold text-brand-600">{pendingData.userEmail}</span>
             </p>
           </div>
 
-          {/* Inbox Instruction Banner */}
+          {/* Inbox instruction */}
           <div className="p-4 bg-amber-50 border border-amber-200 rounded-2xl text-left space-y-1">
-            <p className="text-xs font-extrabold text-amber-700 uppercase tracking-wider">📬 Check Your Email Inbox</p>
+            <p className="text-xs font-extrabold text-amber-700 uppercase tracking-wider">
+              📬 Check Your Email Inbox
+            </p>
             <p className="text-xs text-amber-700 leading-relaxed">
-              Open your email app or Gmail, look for an email from <strong>Staypoint Davao</strong> with the subject <strong>"Your Inquiry Verification Code"</strong>, and enter the 6-digit code below.
+              Open your Gmail or email app. Look for an email from{' '}
+              <strong>Staypoint Davao</strong> with the subject{' '}
+              <strong>&quot;Your Inquiry Verification Code&quot;</strong>, then enter the
+              6-digit code below.
             </p>
           </div>
 
-          {/* OTP Code Input — large, centered, and clearly visible */}
+          {/* OTP input */}
           <div className="space-y-2">
             <label className="block text-xs font-extrabold text-slate-700 uppercase tracking-wider text-center">
               Enter Your 6-Digit Code
@@ -338,6 +402,7 @@ export const InquiryModal: React.FC<InquiryModalProps> = ({
             )}
           </div>
 
+          {/* Actions */}
           <div className="space-y-2 pt-2">
             <Button
               type="submit"
@@ -346,10 +411,10 @@ export const InquiryModal: React.FC<InquiryModalProps> = ({
               isLoading={isSubmitting}
               leftIcon={<ShieldCheck className="w-4 h-4" />}
             >
-              Verify Code & Activate Inquiry
+              Verify Code &amp; Activate Inquiry
             </Button>
 
-            {/* 40-second Resend Cooldown Button */}
+            {/* Resend button with 40-second cooldown */}
             <button
               type="button"
               onClick={handleResendCode}
@@ -376,6 +441,8 @@ export const InquiryModal: React.FC<InquiryModalProps> = ({
             </button>
           </div>
         </form>
+
+      /* ── FORM ───────────────────────────────────────────────────────── */
       ) : (
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <Input
@@ -395,7 +462,6 @@ export const InquiryModal: React.FC<InquiryModalProps> = ({
               {...register('userEmail')}
               error={errors.userEmail?.message}
             />
-
             <Input
               label="Active Mobile Phone Number"
               placeholder="09171234567 or +639171234567"
@@ -418,15 +484,15 @@ export const InquiryModal: React.FC<InquiryModalProps> = ({
             <label className="text-xs font-semibold text-slate-700 uppercase tracking-wider">
               Your Message or Specific Questions
             </label>
-            <div className="relative">
-              <textarea
-                rows={4}
-                placeholder="I am interested in viewing this room. What are the move-in requirements?"
-                className="w-full rounded-xl border border-slate-300 p-3 text-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20 text-slate-900 bg-white"
-                {...register('message')}
-              />
-            </div>
-            {errors.message && <p className="text-xs text-rose-500">{errors.message.message}</p>}
+            <textarea
+              rows={4}
+              placeholder="I am interested in viewing this room. What are the move-in requirements?"
+              className="w-full rounded-xl border border-slate-300 p-3 text-sm text-slate-900 bg-white focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
+              {...register('message')}
+            />
+            {errors.message && (
+              <p className="text-xs text-rose-500">{errors.message.message}</p>
+            )}
           </div>
 
           <div className="pt-2">
@@ -437,7 +503,7 @@ export const InquiryModal: React.FC<InquiryModalProps> = ({
               isLoading={isSubmitting}
               leftIcon={<Send className="w-4 h-4" />}
             >
-              Submit & Verify Email
+              Submit &amp; Verify Email
             </Button>
           </div>
         </form>

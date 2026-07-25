@@ -1,12 +1,8 @@
 import dns from 'dns';
 import { sendInquiryOtpEmail, sendAdminReplyEmail } from './emailService';
 import { prisma } from '../config/database';
-import { NotFoundError, UnauthorizedError, BadRequestError } from '../utils/errors';
-import {
-  generateReferenceCode,
-  generateAccessToken,
-  hashToken,
-} from '../utils/hash';
+import { NotFoundError, BadRequestError } from '../utils/errors';
+import { generateReferenceCode, generateAccessToken } from '../utils/hash';
 import { InquiryStatus, SenderType } from '@prisma/client';
 
 export class InquiryService {
@@ -43,10 +39,11 @@ export class InquiryService {
       }
     }
 
-    // 3. Generate 6-digit email OTP verification code
+    // Generate tokens and reference code
     const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
     const referenceCode = generateReferenceCode();
-    const { token: rawAccessToken, hash: accessTokenHash } = generateAccessToken();
+    // accessTokenHash is required by the DB schema — generated but not exposed in the API
+    const { hash: accessTokenHash } = generateAccessToken();
 
     const inquiry = await prisma.inquiry.create({
       data: {
@@ -72,13 +69,11 @@ export class InquiryService {
         },
       },
       include: {
-        room: {
-          select: { title: true, roomNumber: true },
-        },
+        room: { select: { title: true, roomNumber: true } },
       },
     });
 
-    // Send OTP code to the user's REAL email inbox — never expose it in the API response
+    // Send OTP to the user's real inbox — code is never exposed in the API response
     await sendInquiryOtpEmail({
       to: data.userEmail,
       userName: data.userName,
@@ -86,13 +81,9 @@ export class InquiryService {
       otpCode: verificationCode,
     });
 
-    // Return only non-sensitive data — verificationCode is NOT included
     return {
-      inquiryId: inquiry.id,
       referenceCode: inquiry.referenceCode,
       userEmail: inquiry.userEmail,
-      isVerified: false,
-      accessToken: rawAccessToken,
     };
   }
 
@@ -164,28 +155,18 @@ export class InquiryService {
     return { success: true, userEmail: inquiry.userEmail };
   }
 
-  public static async trackInquiry(referenceCode: string, rawToken?: string) {
+  /** Returns the full inquiry thread by reference code — no token required */
+  public static async trackInquiry(referenceCode: string) {
     const inquiry = await prisma.inquiry.findUnique({
       where: { referenceCode },
       include: {
-        room: {
-          select: { id: true, title: true, roomNumber: true, slug: true },
-        },
-        replies: {
-          orderBy: { createdAt: 'asc' },
-        },
+        room: { select: { id: true, title: true, roomNumber: true, slug: true } },
+        replies: { orderBy: { createdAt: 'asc' } },
       },
     });
 
     if (!inquiry) {
       throw new NotFoundError(`Inquiry code '${referenceCode}' not found`);
-    }
-
-    if (rawToken) {
-      const hashedInput = hashToken(rawToken);
-      if (hashedInput !== inquiry.accessTokenHash) {
-        throw new UnauthorizedError('Invalid access token for this inquiry');
-      }
     }
 
     return inquiry;
