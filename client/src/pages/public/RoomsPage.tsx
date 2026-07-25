@@ -1,15 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { RoomService } from '../../services/roomService';
-import { Room, Amenity, RoomStatus } from '../../types';
+import { Room, Amenity } from '../../types';
 import { RoomCard } from '../../components/rooms/RoomCard';
 import { Input } from '../../components/ui/Input';
 import { Button } from '../../components/ui/Button';
-import { Search, Filter, SlidersHorizontal, RefreshCw } from 'lucide-react';
+import { Search, Filter, SlidersHorizontal, RefreshCw, ChevronDown, ChevronUp } from 'lucide-react';
 
 export const RoomsPage: React.FC = () => {
   const [rooms, setRooms] = useState<Room[]>([]);
   const [amenities, setAmenities] = useState<Amenity[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
 
   // Filters state
   const [statusFilter, setStatusFilter] = useState<string>('');
@@ -65,21 +66,38 @@ export const RoomsPage: React.FC = () => {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-10">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 space-y-8 sm:space-y-10">
       {/* Header Title */}
-      <div className="space-y-3 border-b border-slate-200 pb-8">
+      <div className="space-y-3 border-b border-slate-200 pb-6 sm:pb-8">
         <span className="text-xs font-extrabold text-brand-600 uppercase tracking-widest">
           Apartment Inventory
         </span>
-        <h1 className="text-4xl font-extrabold text-slate-900">Available Room Units</h1>
-        <p className="text-slate-600 text-base max-w-2xl">
-          Browse our selection of fully-furnished studio units, executive suites, and standard rooms.
+        <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-900">Available Room Units</h1>
+        <p className="text-slate-600 text-sm sm:text-base max-w-2xl">
+          Browse our selection of fully-furnished studio units, executive suites, and standard rooms in Staypoint Davao.
         </p>
       </div>
 
+      {/* Mobile Filter Toggle Button */}
+      <div className="lg:hidden">
+        <button
+          onClick={() => setIsMobileFilterOpen(!isMobileFilterOpen)}
+          className="w-full flex items-center justify-between p-4 bg-white rounded-2xl border border-slate-200/80 shadow-sm font-bold text-slate-900 text-sm"
+        >
+          <span className="flex items-center gap-2">
+            <SlidersHorizontal className="w-4 h-4 text-brand-600" /> Filter & Sort Options
+          </span>
+          {isMobileFilterOpen ? <ChevronUp className="w-4 h-4 text-slate-500" /> : <ChevronDown className="w-4 h-4 text-slate-500" />}
+        </button>
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-        {/* Left Filter Drawer Sidebar */}
-        <div className="lg:col-span-1 space-y-6 bg-white p-6 rounded-3xl border border-slate-200/80 shadow-sm h-fit">
+        {/* Left Filter Sidebar / Mobile Collapsible Container */}
+        <div
+          className={`lg:col-span-1 space-y-6 bg-white p-6 rounded-3xl border border-slate-200/80 shadow-sm h-fit ${
+            isMobileFilterOpen ? 'block' : 'hidden lg:block'
+          }`}
+        >
           <div className="flex items-center justify-between border-b border-slate-100 pb-4">
             <h3 className="font-extrabold text-slate-900 text-lg flex items-center gap-2">
               <SlidersHorizontal className="w-5 h-5 text-brand-600" /> Filter Rooms
@@ -149,7 +167,13 @@ export const RoomsPage: React.FC = () => {
             </select>
           </div>
 
-          <Button onClick={fetchRooms} className="w-full">
+          <Button
+            onClick={() => {
+              fetchRooms();
+              setIsMobileFilterOpen(false);
+            }}
+            className="w-full"
+          >
             Apply Filters
           </Button>
         </div>
@@ -179,7 +203,7 @@ export const RoomsPage: React.FC = () => {
               ))}
             </div>
           ) : rooms.length === 0 ? (
-            <div className="bg-white p-12 rounded-3xl border border-slate-200 text-center space-y-4">
+            <div className="bg-white p-8 sm:p-12 rounded-3xl border border-slate-200 text-center space-y-4">
               <Filter className="w-12 h-12 text-slate-400 mx-auto" />
               <h3 className="text-xl font-bold text-slate-800">No Rooms Found</h3>
               <p className="text-sm text-slate-500">
