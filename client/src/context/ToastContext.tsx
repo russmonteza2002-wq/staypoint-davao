@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 import { CheckCircle2, AlertTriangle, XCircle, Info, X } from 'lucide-react';
 
 export type ToastType = 'success' | 'error' | 'warning' | 'info';
@@ -30,6 +30,17 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const removeToast = (id: string) => {
     setToasts((prev) => prev.filter((t) => t.id !== id));
   };
+
+  // Listen for global session expiration events dispatched by apiClient
+  useEffect(() => {
+    const handleSessionExpired = () => {
+      showToast('warning', 'Session Expired', 'Please log in again to access the property admin portal.');
+    };
+    window.addEventListener('session_expired', handleSessionExpired);
+    return () => {
+      window.removeEventListener('session_expired', handleSessionExpired);
+    };
+  }, []);
 
   return (
     <ToastContext.Provider value={{ showToast }}>

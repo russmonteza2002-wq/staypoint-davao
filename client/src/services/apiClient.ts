@@ -46,7 +46,8 @@ apiClient.interceptors.request.use(
 /**
  * Axios Response Interceptor
  * Intercepts incoming API responses. If a 401 Unauthorized response is received,
- * it automatically clears the invalid/expired token from localStorage.
+ * it automatically clears the invalid/expired token from localStorage and dispatches
+ * a global 'session_expired' event for UI notification toasts.
  */
 apiClient.interceptors.response.use(
   (response) => response,
@@ -54,6 +55,8 @@ apiClient.interceptors.response.use(
     if (error.response?.status === 401) {
       // Clear stored JWT token when session is invalid or expired
       localStorage.removeItem('admin_token');
+      // Dispatch custom event for UI toast notification
+      window.dispatchEvent(new CustomEvent('session_expired'));
     }
     return Promise.reject(error);
   }
