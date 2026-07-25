@@ -1,5 +1,6 @@
+import dns from 'dns';
 import { prisma } from '../config/database';
-import { NotFoundError, UnauthorizedError } from '../utils/errors';
+import { NotFoundError, UnauthorizedError, BadRequestError } from '../utils/errors';
 import {
   generateReferenceCode,
   generateAccessToken,
@@ -8,7 +9,46 @@ import {
 import { InquiryStatus, SenderType } from '@prisma/client';
 
 export class InquiryService {
+  /**
+   * Performs DNS MX (Mail Exchange) record lookup to verify if the email domain actually exists
+   * and is configured to receive emails.
+   */
+  private static async verifyEmailDomainExists(email: string): Promise<boolean> {
+    try {
+      const domain = email.split('@')[1];
+      if (!domain) return false;
+      
+      // Look up Mail Exchange (MX) DNS records for the domain
+      const mxRecords = await dns.promises.resolveMx(domain);
+      return Array.isArray(mxRecords) && mxRecords.length > 0;
+    } catch (error) {
+      // Domain has no MX records or DNS lookup failed
+      return false;
+    }
+  }
+
   public static async createInquiry(data: any) {
+    // 1. Verify that the email domain actually exists and has live MX mail servers
+    const isDomainActive = await this.verifyEmailDomainExists(data.userEmail);
+    if (!isDomainActive) {
+      throw new BadRequestError(
+        `The email address domain '${data.userEmail.split('@')[1] || ''}' does not exist or has no active mail servers. Please enter a valid, active personal or work email address (e.g. name@gmail.com).`
+      );
+    }
+
+    // 2. Verify that the preferred viewing date is not in the past
+    if (data.preferredViewingDate) {
+      const viewingDate = new Date(data.preferredViewingDate);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      if (isNaN(viewingDate.getTime()) || viewingDate < today) {
+        throw new BadRequestError(
+          'Preferred viewing date cannot be in the past. Please select today or a future date.'
+        );
+      }
+    }
+
     const referenceCode = generateReferenceCode();
     const { token: rawAccessToken, hash: accessTokenHash } = generateAccessToken();
 

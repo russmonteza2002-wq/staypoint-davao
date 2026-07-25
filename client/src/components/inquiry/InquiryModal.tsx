@@ -20,7 +20,7 @@ const inquirySchema = z.object({
     .toLowerCase()
     .email('Invalid email address format')
     .refine((email: string) => VALID_EMAIL_REGEX.test(email), {
-      message: 'Please enter a valid email address (e.g. name@gmail.com)',
+      message: 'Please enter a valid email address with a domain extension (e.g. name@gmail.com)',
     })
     .refine(
       (email: string) =>
@@ -30,7 +30,22 @@ const inquirySchema = z.object({
       }
     ),
   userPhone: z.string().optional(),
-  preferredViewingDate: z.string().optional(),
+  preferredViewingDate: z
+    .string()
+    .optional()
+    .nullable()
+    .refine(
+      (val) => {
+        if (!val) return true;
+        const viewingDate = new Date(val);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        return viewingDate >= today;
+      },
+      {
+        message: 'Preferred viewing date cannot be in the past. Please select today or a future date.',
+      }
+    ),
   message: z.string().trim().min(10, 'Message must be at least 10 characters long'),
 });
 
@@ -55,6 +70,8 @@ export const InquiryModal: React.FC<InquiryModalProps> = ({
     referenceCode: string;
     accessToken: string;
   } | null>(null);
+
+  const todayMinDate = new Date().toISOString().split('T')[0];
 
   const {
     register,
@@ -170,6 +187,7 @@ export const InquiryModal: React.FC<InquiryModalProps> = ({
           <Input
             label="Preferred Viewing Date (Optional)"
             type="date"
+            min={todayMinDate}
             leftIcon={<Calendar className="w-4 h-4 text-slate-500" />}
             {...register('preferredViewingDate')}
             error={errors.preferredViewingDate?.message}
@@ -183,7 +201,7 @@ export const InquiryModal: React.FC<InquiryModalProps> = ({
               <textarea
                 rows={4}
                 placeholder="I am interested in viewing this room. What are the move-in requirements?"
-                className="w-full rounded-xl border border-slate-300 p-3 text-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
+                className="w-full rounded-xl border border-slate-300 p-3 text-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20 text-slate-900 bg-white"
                 {...register('message')}
               />
             </div>
