@@ -8,11 +8,6 @@ import {
   ArrowRight,
   MessageSquare,
   MapPin,
-  Droplet,
-  Zap,
-  FileText,
-  Bike,
-  Slash,
 } from 'lucide-react';
 import { RoomService } from '../../services/roomService';
 import { Room, ApartmentInfo } from '../../types';
@@ -80,55 +75,7 @@ export const HomePage: React.FC = () => {
           </div>
         </div>
       </section>
-
-      {/* 2. RENTAL POLICIES & INCLUDED UTILITIES */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="bg-slate-900 p-5 sm:p-12 rounded-2xl sm:rounded-3xl border border-slate-800 shadow-2xl text-white space-y-5 sm:space-y-8">
-          <div className="text-center space-y-2 sm:space-y-3">
-            <span className="text-xs font-extrabold text-brand-400 uppercase tracking-widest">
-              Rental Policies & Utilities
-            </span>
-            <h2 className="text-2xl sm:text-4xl font-extrabold text-white">Transparent Lease Terms</h2>
-            <p className="text-slate-400 max-w-2xl mx-auto text-xs sm:text-base">
-              Everything you need to know before moving into Staypoint Davao.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-5 gap-2.5 sm:gap-4">
-            <div className="p-3.5 sm:p-5 bg-slate-950/80 rounded-xl sm:rounded-2xl border border-slate-800 space-y-1.5 text-center">
-              <Droplet className="w-6 h-6 sm:w-7 sm:h-7 text-sky-400 mx-auto" />
-              <h4 className="font-extrabold text-xs sm:text-sm text-white">Free Water Supply</h4>
-              <p className="text-xs text-slate-400">Water utility is included in monthly rent.</p>
-            </div>
-
-            <div className="p-5 bg-slate-950/80 rounded-2xl border border-slate-800 space-y-2 text-center">
-              <Zap className="w-7 h-7 text-amber-400 mx-auto" />
-              <h4 className="font-extrabold text-sm text-white">Own Electric Meter</h4>
-              <p className="text-xs text-slate-400">Individual sub-meter for actual usage.</p>
-            </div>
-
-            <div className="p-5 bg-slate-950/80 rounded-2xl border border-slate-800 space-y-2 text-center">
-              <FileText className="w-7 h-7 text-indigo-400 mx-auto" />
-              <h4 className="font-extrabold text-sm text-white">1-Year Minimum Term</h4>
-              <p className="text-xs text-slate-400">Minimum 1-year contract agreement.</p>
-            </div>
-
-            <div className="p-5 bg-slate-950/80 rounded-2xl border border-slate-800 space-y-2 text-center">
-              <Bike className="w-7 h-7 text-emerald-400 mx-auto" />
-              <h4 className="font-extrabold text-sm text-white">Motorcycle Parking</h4>
-              <p className="text-xs text-slate-400">Motorbike parking space inside premises.</p>
-            </div>
-
-            <div className="p-5 bg-slate-950/80 rounded-2xl border border-slate-800 space-y-2 text-center">
-              <Slash className="w-7 h-7 text-rose-400 mx-auto" />
-              <h4 className="font-extrabold text-sm text-white">No Pets Allowed</h4>
-              <p className="text-xs text-slate-400">Strict no-pets policy inside building.</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* 3. WHY CHOOSE US / FEATURES */}
+      {/* 2. WHY CHOOSE US / FEATURES */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center space-y-4 mb-16">
           <span className="text-xs font-extrabold text-brand-600 uppercase tracking-widest">
