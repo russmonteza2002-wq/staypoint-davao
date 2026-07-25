@@ -44,13 +44,13 @@ export const createInquirySchema = z.object({
     userEmail: z
       .string()
       .trim()
-      .lowercase()
+      .toLowerCase()
       .email('Please enter a valid email address format')
-      .refine((email) => VALID_EMAIL_REGEX.test(email), {
+      .refine((email: string) => VALID_EMAIL_REGEX.test(email), {
         message: 'Please enter a valid email address with a domain extension (e.g., name@gmail.com)',
       })
       .refine(
-        (email) => {
+        (email: string) => {
           const domain = email.split('@')[1];
           return domain ? !DISPOSABLE_DOMAINS.includes(domain) : true;
         },
@@ -59,7 +59,7 @@ export const createInquirySchema = z.object({
         }
       )
       .refine(
-        (email) => {
+        (email: string) => {
           const username = email.split('@')[0] || '';
           return !SUSPICIOUS_PATTERNS.some((pattern) => pattern.test(username));
         },
@@ -71,7 +71,7 @@ export const createInquirySchema = z.object({
       .string()
       .trim()
       .min(1, 'Active phone number is required so the property manager can contact you')
-      .refine((phone) => PH_PHONE_REGEX.test(phone.replace(/\s+/g, '')), {
+      .refine((phone: string) => PH_PHONE_REGEX.test(phone.replace(/\s+/g, '')), {
         message: 'Please enter a valid Philippine mobile number (e.g. 09171234567 or +639171234567)',
       }),
     message: z
