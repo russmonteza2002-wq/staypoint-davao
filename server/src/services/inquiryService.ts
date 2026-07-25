@@ -90,7 +90,7 @@ export class InquiryService {
   /**
    * Verifies the 6-digit email confirmation code entered by the user
    */
-  public static async verifyInquiryCode(referenceCode: string, code: string, rawAccessToken?: string) {
+  public static async verifyInquiryCode(referenceCode: string, code: string) {
     const inquiry = await prisma.inquiry.findUnique({
       where: { referenceCode },
     });

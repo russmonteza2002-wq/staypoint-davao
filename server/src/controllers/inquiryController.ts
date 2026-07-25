@@ -25,8 +25,8 @@ export class InquiryController {
     next: NextFunction
   ): Promise<void> => {
     try {
-      const { referenceCode, code, rawAccessToken } = req.body;
-      const result = await InquiryService.verifyInquiryCode(referenceCode, code, rawAccessToken);
+      const { referenceCode, code } = req.body;
+      const result = await InquiryService.verifyInquiryCode(referenceCode, code);
       res.status(200).json({
         success: true,
         message: 'Email verified successfully!',
