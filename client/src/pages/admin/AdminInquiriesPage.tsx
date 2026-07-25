@@ -3,11 +3,10 @@ import { InquiryService } from '../../services/inquiryService';
 import { Inquiry, InquiryStatus } from '../../types';
 import { Badge } from '../../components/ui/Badge';
 import { Button } from '../../components/ui/Button';
-import { Input } from '../../components/ui/Input';
 import { Modal } from '../../components/ui/Modal';
 import { Spinner } from '../../components/ui/Spinner';
 import { useToast } from '../../context/ToastContext';
-import { MessageSquare, Send, Search, User, ShieldCheck } from 'lucide-react';
+import { Send } from 'lucide-react';
 
 export const AdminInquiriesPage: React.FC = () => {
   const { showToast } = useToast();
@@ -161,7 +160,7 @@ export const AdminInquiriesPage: React.FC = () => {
                   key={msg.id}
                   className={`p-3.5 rounded-2xl text-xs space-y-1 ${
                     msg.senderType === 'ADMIN'
-                      ? 'bg-slate-900 text-white ml-auto max-w-md'
+                      ? 'bg-slate-900 text-white ml-auto max-w-md shadow-sm'
                       : 'bg-white text-slate-900 border border-slate-200 mr-auto max-w-md shadow-sm'
                   }`}
                 >
@@ -176,14 +175,14 @@ export const AdminInquiriesPage: React.FC = () => {
 
             {/* Admin Reply Form */}
             <form onSubmit={handleSendAdminReply} className="space-y-3 pt-2">
-              <div className="flex items-center justify-between">
-                <label className="text-xs font-bold uppercase tracking-wider text-slate-700">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <label className="text-xs font-extrabold uppercase tracking-wider text-slate-900">
                   Type Manager Response:
                 </label>
                 <select
                   value={updateStatusTo}
                   onChange={(e) => setUpdateStatusTo(e.target.value as InquiryStatus)}
-                  className="text-xs font-bold border border-slate-300 rounded-lg p-1.5 bg-white"
+                  className="text-xs font-bold border border-slate-300 rounded-xl p-2 bg-white text-slate-900 shadow-sm focus:ring-2 focus:ring-brand-500/20"
                 >
                   <option value="REPLIED">Set Status: REPLIED</option>
                   <option value="VIEWING_SCHEDULED">Set Status: VIEWING SCHEDULED</option>
@@ -193,10 +192,10 @@ export const AdminInquiriesPage: React.FC = () => {
 
               <textarea
                 rows={3}
-                placeholder="Write reply message..."
+                placeholder="Write reply message to user thread..."
                 value={replyMessage}
                 onChange={(e) => setReplyMessage(e.target.value)}
-                className="w-full rounded-2xl border border-slate-300 p-3 text-sm focus:border-brand-500 focus:outline-none"
+                className="w-full rounded-2xl border border-slate-300 p-3.5 text-sm font-semibold text-slate-900 bg-white placeholder:text-slate-400 focus:border-brand-600 focus:ring-2 focus:ring-brand-500/20 focus:outline-none shadow-sm"
               />
 
               <Button type="submit" isLoading={isSendingReply} leftIcon={<Send className="w-4 h-4" />}>
