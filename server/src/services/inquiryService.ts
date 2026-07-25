@@ -1,5 +1,5 @@
 import dns from 'dns';
-import { sendInquiryOtpEmail } from './emailService';
+import { sendInquiryOtpEmail, sendAdminReplyEmail } from './emailService';
 import { prisma } from '../config/database';
 import { NotFoundError, UnauthorizedError, BadRequestError } from '../utils/errors';
 import {
@@ -313,6 +313,19 @@ export class InquiryService {
         data: { status: newStatus },
       }),
     ]);
+
+    // Send email notification to the tenant's real inbox with the manager's reply
+    try {
+      await sendAdminReplyEmail({
+        to: inquiry.userEmail,
+        userName: inquiry.userName,
+        referenceCode: inquiry.referenceCode,
+        replyMessage: message,
+      });
+    } catch (emailError) {
+      // Log but do not throw — reply is already saved, email failure should not break the flow
+      console.error('[adminReply] Failed to send reply notification email:', emailError);
+    }
 
     return reply;
   }
