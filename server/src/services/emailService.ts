@@ -1,8 +1,13 @@
 import nodemailer from 'nodemailer';
 
-// Initialize Gmail SMTP transporter
+// Initialize Gmail SMTP transporter with strict connection timeouts
 const transporter = nodemailer.createTransport({
-  service: 'gmail',
+  host: 'smtp.gmail.com',
+  port: 465,
+  secure: true,
+  connectionTimeout: 5000, // 5s timeout
+  greetingTimeout: 5000,
+  socketTimeout: 5000,
   auth: {
     user: process.env.GMAIL_USER,
     pass: process.env.GMAIL_APP_PASSWORD,
