@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -25,23 +25,31 @@ export const AdminLoginPage: React.FC = () => {
   const {
     register,
     handleSubmit,
+    reset,
     formState: { errors },
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      email: 'admin@apartment.com',
-      password: 'AdminPass123!',
+      email: '',
+      password: '',
     },
   });
+
+  // Always reset and clear form fields when mounting page
+  useEffect(() => {
+    reset({ email: '', password: '' });
+  }, [reset]);
 
   const onSubmit = async (data: LoginFormData) => {
     setIsLoading(true);
     try {
       await login(data.email, data.password);
       showToast('success', 'Welcome Back!', 'Logged into property admin dashboard');
+      reset({ email: '', password: '' });
       navigate('/admin/dashboard');
     } catch (error: any) {
       showToast('error', 'Login Failed', error.response?.data?.message || 'Invalid credentials');
+      reset({ email: '', password: '' });
     } finally {
       setIsLoading(false);
     }
@@ -71,11 +79,12 @@ export const AdminLoginPage: React.FC = () => {
           <p className="text-xs text-slate-400">Restricted login for authorized property managers</p>
         </div>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-5 text-left">
+        <form onSubmit={handleSubmit(onSubmit)} autoComplete="off" className="space-y-5 text-left">
           <Input
             label="Admin Email"
             type="email"
-            placeholder="admin@apartment.com"
+            placeholder="e.g. admin@apartment.com"
+            autoComplete="off"
             leftIcon={<Mail className="w-4 h-4 text-slate-500" />}
             {...register('email')}
             error={errors.email?.message}
@@ -85,6 +94,7 @@ export const AdminLoginPage: React.FC = () => {
             label="Password"
             type="password"
             placeholder="••••••••"
+            autoComplete="new-password"
             leftIcon={<Lock className="w-4 h-4 text-slate-500" />}
             {...register('password')}
             error={errors.password?.message}
