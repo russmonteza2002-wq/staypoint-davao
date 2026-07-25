@@ -23,6 +23,9 @@ import siteRoutes from './routes/siteRoutes';
 // Initialize Express Application
 const app: Application = express();
 
+// Trust Render.com's reverse proxy so express-rate-limit correctly identifies client IPs
+app.set('trust proxy', 1);
+
 /**
  * 1. Security & CORS Middlewares
  * - Helmet configures Content Security Policy, HSTS, X-Frame-Options, Referrer-Policy
