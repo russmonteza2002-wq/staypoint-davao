@@ -13,6 +13,8 @@ router.post(
   InquiryController.createInquiry
 );
 
+router.post('/verify-code', InquiryController.verifyInquiryCode);
+
 router.get('/track/:refCode', InquiryController.trackInquiry);
 
 router.post(

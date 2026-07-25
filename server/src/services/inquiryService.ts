@@ -9,20 +9,13 @@ import {
 import { InquiryStatus, SenderType } from '@prisma/client';
 
 export class InquiryService {
-  /**
-   * Performs DNS MX (Mail Exchange) record lookup to verify if the email domain actually exists
-   * and is configured to receive emails.
-   */
   private static async verifyEmailDomainExists(email: string): Promise<boolean> {
     try {
       const domain = email.split('@')[1];
       if (!domain) return false;
-      
-      // Look up Mail Exchange (MX) DNS records for the domain
       const mxRecords = await dns.promises.resolveMx(domain);
       return Array.isArray(mxRecords) && mxRecords.length > 0;
     } catch (error) {
-      // Domain has no MX records or DNS lookup failed
       return false;
     }
   }
@@ -49,6 +42,8 @@ export class InquiryService {
       }
     }
 
+    // 3. Generate 6-digit email OTP verification code
+    const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
     const referenceCode = generateReferenceCode();
     const { token: rawAccessToken, hash: accessTokenHash } = generateAccessToken();
 
@@ -56,6 +51,8 @@ export class InquiryService {
       data: {
         referenceCode,
         accessTokenHash,
+        verificationCode,
+        isVerified: false,
         roomId: data.roomId || null,
         userName: data.userName,
         userEmail: data.userEmail,
@@ -81,14 +78,45 @@ export class InquiryService {
     });
 
     return {
-      inquiry: {
-        id: inquiry.id,
-        referenceCode: inquiry.referenceCode,
-        status: inquiry.status,
-        userName: inquiry.userName,
-        createdAt: inquiry.createdAt,
-      },
+      inquiryId: inquiry.id,
+      referenceCode: inquiry.referenceCode,
+      userEmail: inquiry.userEmail,
+      verificationCode, // Returned for instant verification UI step
+      isVerified: false,
       accessToken: rawAccessToken,
+    };
+  }
+
+  /**
+   * Verifies the 6-digit email confirmation code entered by the user
+   */
+  public static async verifyInquiryCode(referenceCode: string, code: string, rawAccessToken?: string) {
+    const inquiry = await prisma.inquiry.findUnique({
+      where: { referenceCode },
+    });
+
+    if (!inquiry) {
+      throw new NotFoundError(`Inquiry '${referenceCode}' not found`);
+    }
+
+    if (inquiry.verificationCode !== code.trim()) {
+      throw new BadRequestError('Invalid verification code. Please check the 6-digit code and try again.');
+    }
+
+    // Update inquiry as 100% verified and active
+    const updatedInquiry = await prisma.inquiry.update({
+      where: { id: inquiry.id },
+      data: {
+        isVerified: true,
+        status: InquiryStatus.NEW,
+      },
+    });
+
+    return {
+      success: true,
+      referenceCode: updatedInquiry.referenceCode,
+      userEmail: updatedInquiry.userEmail,
+      isVerified: true,
     };
   }
 
@@ -148,7 +176,10 @@ export class InquiryService {
     const limit = parseInt(query.limit || '10', 10);
     const skip = (page - 1) * limit;
 
-    const where: any = {};
+    // ONLY fetch inquiries where isVerified = true so unverified fake emails never clutter admin portal
+    const where: any = {
+      isVerified: true,
+    };
 
     if (query.status) {
       where.status = query.status as InquiryStatus;

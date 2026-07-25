@@ -2,8 +2,16 @@ import { apiClient } from './apiClient';
 import { Inquiry, Reply, ApiResponse, InquiryStatus } from '../types';
 
 export class InquiryService {
-  public static async createInquiry(data: any): Promise<ApiResponse<{ inquiry: Inquiry; accessToken: string }>> {
-    const res = await apiClient.post<ApiResponse<{ inquiry: Inquiry; accessToken: string }>>('/inquiries', data);
+  public static async createInquiry(data: any): Promise<ApiResponse<any>> {
+    const res = await apiClient.post<ApiResponse<any>>('/inquiries', data);
+    return res.data;
+  }
+
+  public static async verifyInquiryCode(referenceCode: string, code: string): Promise<ApiResponse<any>> {
+    const res = await apiClient.post<ApiResponse<any>>('/inquiries/verify-code', {
+      referenceCode,
+      code,
+    });
     return res.data;
   }
 

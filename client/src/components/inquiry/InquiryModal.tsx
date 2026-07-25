@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Send, CheckCircle, Copy, Calendar, User, Mail, Phone } from 'lucide-react';
+import { Send, CheckCircle, Copy, Calendar, User, Mail, Phone, ShieldCheck, KeyRound } from 'lucide-react';
 import { Modal } from '../ui/Modal';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
@@ -112,11 +112,17 @@ export const InquiryModal: React.FC<InquiryModalProps> = ({
   roomTitle,
 }) => {
   const { showToast } = useToast();
+  const [step, setStep] = useState<'FORM' | 'VERIFY' | 'SUCCESS'>('FORM');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submittedData, setSubmittedData] = useState<{
+
+  const [pendingData, setPendingData] = useState<{
     referenceCode: string;
+    userEmail: string;
+    verificationCode: string;
     accessToken: string;
   } | null>(null);
+
+  const [enteredOtp, setEnteredOtp] = useState('');
 
   const todayMinDate = new Date().toISOString().split('T')[0];
 
@@ -137,13 +143,15 @@ export const InquiryModal: React.FC<InquiryModalProps> = ({
         roomId,
       });
 
-      setSubmittedData({
-        referenceCode: res.data.inquiry.referenceCode,
+      setPendingData({
+        referenceCode: res.data.referenceCode,
+        userEmail: res.data.userEmail,
+        verificationCode: res.data.verificationCode,
         accessToken: res.data.accessToken,
       });
 
-      showToast('success', 'Inquiry Submitted!', 'Save your reference code to track manager replies.');
-      reset();
+      setStep('VERIFY');
+      showToast('info', 'Verification Code Generated', 'Please enter your 6-digit email confirmation code below.');
     } catch (error: any) {
       showToast('error', 'Submission Failed', error.response?.data?.message || 'Please check email address and input fields');
     } finally {
@@ -151,36 +159,55 @@ export const InquiryModal: React.FC<InquiryModalProps> = ({
     }
   };
 
+  const handleVerifyOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!pendingData || !enteredOtp.trim()) return;
+
+    setIsSubmitting(true);
+    try {
+      await InquiryService.verifyInquiryCode(pendingData.referenceCode, enteredOtp.trim());
+      setStep('SUCCESS');
+      showToast('success', 'Email Verified!', 'Your inquiry is active and delivered to the property manager.');
+      reset();
+    } catch (error: any) {
+      showToast('error', 'Verification Failed', error.response?.data?.message || 'Invalid 6-digit code.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const handleClose = () => {
-    setSubmittedData(null);
+    setStep('FORM');
+    setPendingData(null);
+    setEnteredOtp('');
     onClose();
   };
 
   return (
     <Modal isOpen={isOpen} onClose={handleClose} title={roomTitle ? `Inquire About ${roomTitle}` : 'Submit Property Inquiry'} maxWidth="lg">
-      {submittedData ? (
+      {step === 'SUCCESS' && pendingData ? (
         <div className="space-y-6 text-center py-4">
           <div className="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto shadow-inner">
             <CheckCircle className="w-10 h-10" />
           </div>
 
           <div className="space-y-2">
-            <h3 className="text-xl font-extrabold text-slate-900">Inquiry Sent Successfully!</h3>
+            <h3 className="text-xl font-extrabold text-slate-900">Email Verified & Inquiry Sent!</h3>
             <p className="text-sm text-slate-600 max-w-md mx-auto">
-              Your inquiry has been stored directly in our property portal database. Save your reference code below to track direct replies from the owner.
+              Your email address has been verified and your inquiry lead is active. Save your unique reference code below to track direct replies from the property manager.
             </p>
           </div>
 
           {/* Reference Code Box */}
           <div className="p-4 bg-slate-900 text-white rounded-2xl border border-slate-800 space-y-2">
-            <span className="text-xs uppercase font-bold text-slate-400 tracking-wider">Your Unique Reference Code</span>
+            <span className="text-xs uppercase font-bold text-slate-400 tracking-wider">Your Verified Reference Code</span>
             <div className="flex items-center justify-center gap-3">
               <span className="font-mono text-2xl font-extrabold tracking-widest text-brand-400">
-                {submittedData.referenceCode}
+                {pendingData.referenceCode}
               </span>
               <button
                 onClick={() => {
-                  navigator.clipboard.writeText(submittedData.referenceCode);
+                  navigator.clipboard.writeText(pendingData.referenceCode);
                   showToast('info', 'Copied to Clipboard!');
                 }}
                 className="p-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-slate-300 hover:text-white transition-colors"
@@ -192,7 +219,7 @@ export const InquiryModal: React.FC<InquiryModalProps> = ({
           </div>
 
           <div className="pt-2 flex flex-col gap-2">
-            <a href={`/track-inquiry?code=${submittedData.referenceCode}&token=${submittedData.accessToken}`}>
+            <a href={`/track-inquiry?code=${pendingData.referenceCode}&token=${pendingData.accessToken}`}>
               <Button variant="primary" className="w-full">
                 View Inquiry Thread & Status
               </Button>
@@ -202,6 +229,59 @@ export const InquiryModal: React.FC<InquiryModalProps> = ({
             </Button>
           </div>
         </div>
+      ) : step === 'VERIFY' && pendingData ? (
+        <form onSubmit={handleVerifyOtp} className="space-y-6 text-center py-2">
+          <div className="w-14 h-14 bg-brand-50 text-brand-600 rounded-2xl flex items-center justify-center mx-auto">
+            <ShieldCheck className="w-8 h-8" />
+          </div>
+
+          <div className="space-y-2">
+            <h3 className="text-xl font-extrabold text-slate-900">Enter Email Confirmation Code</h3>
+            <p className="text-xs text-slate-600 max-w-sm mx-auto">
+              Please confirm your active email address <strong>{pendingData.userEmail}</strong> by entering the 6-digit verification code below.
+            </p>
+          </div>
+
+          {/* Verification Code Display Badge */}
+          <div className="p-4 bg-brand-950/90 text-white rounded-2xl border border-brand-500/40 space-y-1">
+            <span className="text-[10px] uppercase font-extrabold text-brand-300 tracking-widest">
+              Email Confirmation OTP Code
+            </span>
+            <div className="font-mono text-3xl font-extrabold tracking-widest text-brand-400">
+              {pendingData.verificationCode}
+            </div>
+          </div>
+
+          <div className="max-w-xs mx-auto space-y-2 text-left">
+            <Input
+              label="6-Digit Verification Code"
+              placeholder="e.g. 123456"
+              leftIcon={<KeyRound className="w-4 h-4 text-slate-500" />}
+              value={enteredOtp}
+              onChange={(e) => setEnteredOtp(e.target.value)}
+              className="text-center font-mono text-lg font-bold tracking-widest"
+            />
+          </div>
+
+          <div className="space-y-2 pt-2">
+            <Button
+              type="submit"
+              variant="primary"
+              className="w-full"
+              isLoading={isSubmitting}
+              leftIcon={<ShieldCheck className="w-4 h-4" />}
+            >
+              Verify Code & Activate Inquiry
+            </Button>
+            <button
+              type="button"
+              onClick={() => setStep('FORM')}
+              className="text-xs font-bold text-slate-500 hover:text-slate-800"
+            >
+              ← Edit Email Address
+            </button>
+          </div>
+        </form>
       ) : (
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <Input
@@ -263,7 +343,7 @@ export const InquiryModal: React.FC<InquiryModalProps> = ({
               isLoading={isSubmitting}
               leftIcon={<Send className="w-4 h-4" />}
             >
-              Submit Inquiry
+              Submit & Verify Email
             </Button>
           </div>
         </form>

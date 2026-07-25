@@ -19,6 +19,24 @@ export class InquiryController {
     }
   };
 
+  public static verifyInquiryCode = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> => {
+    try {
+      const { referenceCode, code, rawAccessToken } = req.body;
+      const result = await InquiryService.verifyInquiryCode(referenceCode, code, rawAccessToken);
+      res.status(200).json({
+        success: true,
+        message: 'Email verified successfully!',
+        data: result,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
   public static trackInquiry = async (
     req: Request,
     res: Response,
