@@ -92,22 +92,13 @@ export const TrackInquiryPage: React.FC = () => {
       {/* Code Search Card */}
       <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200/80 shadow-md">
         <form onSubmit={handleSearchSubmit} className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Input
-              label="Reference Code"
-              placeholder="e.g. INQ-98A2F"
-              value={refCodeInput}
-              onChange={(e) => setRefCodeInput(e.target.value)}
-              leftIcon={<Search className="w-4 h-4" />}
-            />
-            <Input
-              label="Access Token (Optional for user reply)"
-              type="password"
-              placeholder="Paste access key..."
-              value={accessTokenInput}
-              onChange={(e) => setAccessTokenInput(e.target.value)}
-            />
-          </div>
+          <Input
+            label="Reference Code"
+            placeholder="e.g. INQ-98A2F"
+            value={refCodeInput}
+            onChange={(e) => setRefCodeInput(e.target.value)}
+            leftIcon={<Search className="w-4 h-4" />}
+          />
           <Button
             type="submit"
             className="w-full"
@@ -179,23 +170,43 @@ export const TrackInquiryPage: React.FC = () => {
             })}
           </div>
 
-          {/* Reply Form Box */}
-          <form onSubmit={handleSendUserReply} className="space-y-3 pt-4 border-t border-slate-100">
-            <textarea
-              rows={3}
-              placeholder="Type your reply message here..."
-              value={replyMessage}
-              onChange={(e) => setReplyMessage(e.target.value)}
-              className="w-full rounded-2xl border border-slate-300 p-3.5 text-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
-            />
-            <Button
-              type="submit"
-              isLoading={isSendingReply}
-              leftIcon={<Send className="w-4 h-4" />}
-            >
-              Post Follow-Up Reply
-            </Button>
-          </form>
+          {/* Reply Form — only shown if user has their access token */}
+          {accessTokenInput ? (
+            <form onSubmit={handleSendUserReply} className="space-y-3 pt-4 border-t border-slate-100">
+              <textarea
+                rows={3}
+                placeholder="Type your reply message here..."
+                value={replyMessage}
+                onChange={(e) => setReplyMessage(e.target.value)}
+                className="w-full rounded-2xl border border-slate-300 p-3.5 text-sm text-slate-900 bg-white focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
+              />
+              <Button
+                type="submit"
+                isLoading={isSendingReply}
+                leftIcon={<Send className="w-4 h-4" />}
+              >
+                Post Follow-Up Reply
+              </Button>
+            </form>
+          ) : (
+            <div className="pt-4 border-t border-slate-100">
+              <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 text-center space-y-2">
+                <p className="text-xs font-extrabold text-amber-700 uppercase tracking-wider">🔑 Want to send a follow-up reply?</p>
+                <p className="text-xs text-amber-700 leading-relaxed">
+                  You are viewing this thread via your email link. To post a follow-up reply,
+                  please enter your <strong>access token</strong> below.
+                  You received this token when you first submitted your inquiry.
+                </p>
+                <Input
+                  label=""
+                  type="password"
+                  placeholder="Paste your inquiry access token here..."
+                  value={accessTokenInput}
+                  onChange={(e) => setAccessTokenInput(e.target.value)}
+                />
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>
