@@ -38,23 +38,23 @@ export const AdminDashboard: React.FC = () => {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 sm:space-y-8">
       {/* Top Welcome Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-6">
         <div>
-          <h1 className="text-3xl font-extrabold text-white">Dashboard Overview</h1>
-          <p className="text-sm text-slate-400 mt-1">Real-time status of rooms and inquiry leads</p>
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-white">Dashboard Overview</h1>
+          <p className="text-xs sm:text-sm text-slate-400 mt-1">Real-time status of rooms and inquiry leads</p>
         </div>
         <Link to="/admin/rooms/new">
-          <button className="flex items-center gap-2 px-4 py-2.5 bg-brand-600 hover:bg-brand-500 text-white font-bold text-sm rounded-xl transition-all shadow-lg shadow-brand-600/20">
+          <button className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2.5 bg-brand-600 hover:bg-brand-500 text-white font-bold text-sm rounded-xl transition-all shadow-lg shadow-brand-600/20">
             <PlusCircle className="w-4 h-4" /> Add New Room Listing
           </button>
         </Link>
       </div>
 
       {/* 4 Metric Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="p-6 bg-slate-900 rounded-3xl border border-slate-800 space-y-2">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+        <div className="p-5 sm:p-6 bg-slate-900 rounded-3xl border border-slate-800 space-y-2">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Total Rooms</span>
             <div className="p-2 bg-brand-500/10 text-brand-400 rounded-xl">
@@ -64,7 +64,7 @@ export const AdminDashboard: React.FC = () => {
           <span className="text-3xl font-extrabold text-white block">{stats?.totalRooms || 0}</span>
         </div>
 
-        <div className="p-6 bg-slate-900 rounded-3xl border border-slate-800 space-y-2">
+        <div className="p-5 sm:p-6 bg-slate-900 rounded-3xl border border-slate-800 space-y-2">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold uppercase tracking-wider text-emerald-400">Available</span>
             <div className="p-2 bg-emerald-500/10 text-emerald-400 rounded-xl">
@@ -74,7 +74,7 @@ export const AdminDashboard: React.FC = () => {
           <span className="text-3xl font-extrabold text-emerald-400 block">{stats?.availableRooms || 0}</span>
         </div>
 
-        <div className="p-6 bg-slate-900 rounded-3xl border border-slate-800 space-y-2">
+        <div className="p-5 sm:p-6 bg-slate-900 rounded-3xl border border-slate-800 space-y-2">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold uppercase tracking-wider text-amber-400">Reserved</span>
             <div className="p-2 bg-amber-500/10 text-amber-400 rounded-xl">
@@ -84,7 +84,7 @@ export const AdminDashboard: React.FC = () => {
           <span className="text-3xl font-extrabold text-amber-400 block">{stats?.reservedRooms || 0}</span>
         </div>
 
-        <div className="p-6 bg-slate-900 rounded-3xl border border-slate-800 space-y-2">
+        <div className="p-5 sm:p-6 bg-slate-900 rounded-3xl border border-slate-800 space-y-2">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold uppercase tracking-wider text-sky-400">New Inquiries</span>
             <div className="p-2 bg-sky-500/10 text-sky-400 rounded-xl">
@@ -96,8 +96,8 @@ export const AdminDashboard: React.FC = () => {
       </div>
 
       {/* Recent Inquiries List */}
-      <div className="bg-slate-900 rounded-3xl border border-slate-800 p-6 space-y-6">
-        <div className="flex items-center justify-between border-b border-slate-800 pb-4">
+      <div className="bg-slate-900 rounded-3xl border border-slate-800 p-5 sm:p-6 space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800 pb-4">
           <h3 className="font-extrabold text-white text-lg">Recent User Inquiries</h3>
           <Link to="/admin/inquiries" className="text-xs font-bold text-brand-400 hover:text-brand-300 flex items-center gap-1">
             View All Inquiries <ArrowRight className="w-3.5 h-3.5" />
@@ -109,9 +109,9 @@ export const AdminDashboard: React.FC = () => {
             <p className="text-sm text-slate-500 text-center py-6">No recent inquiries.</p>
           ) : (
             recentInquiries.map((inq) => (
-              <div key={inq.id} className="py-4 flex items-center justify-between gap-4">
+              <div key={inq.id} className="py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div>
-                  <div className="flex items-center gap-2 mb-1">
+                  <div className="flex items-center gap-2 mb-1 flex-wrap">
                     <span className="font-mono font-extrabold text-sm text-brand-400">{inq.referenceCode}</span>
                     <Badge status={inq.status} />
                   </div>
@@ -120,7 +120,7 @@ export const AdminDashboard: React.FC = () => {
                   </p>
                 </div>
                 <Link to="/admin/inquiries">
-                  <button className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-lg transition-colors">
+                  <button className="self-start sm:self-auto px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-lg transition-colors">
                     Reply Thread
                   </button>
                 </Link>
