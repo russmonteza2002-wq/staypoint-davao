@@ -149,7 +149,7 @@ export const InquiryModal: React.FC<InquiryModalProps> = ({
       });
 
       setStep('VERIFY');
-      showToast('info', 'Verification Code Generated', 'Please enter your 6-digit email confirmation code below.');
+      showToast('success', '📬 Verification Email Sent!', `A 6-digit code has been sent to ${res.data.userEmail}. Please check your inbox.`);
     } catch (error: any) {
       showToast('error', 'Submission Failed', error.response?.data?.message || 'Please check email address and input fields');
     } finally {
