@@ -6,11 +6,14 @@ import {
   Maximize2,
   Layers,
   CheckCircle2,
-  Calendar,
   MessageSquare,
   ArrowLeft,
-  DollarSign,
   ShieldAlert,
+  Droplet,
+  Zap,
+  FileText,
+  Bike,
+  Slash,
 } from 'lucide-react';
 import { RoomService } from '../../services/roomService';
 import { Room } from '../../types';
@@ -140,6 +143,52 @@ export const RoomDetailPage: React.FC = () => {
             <h3 className="text-2xl font-extrabold text-slate-900">Room Overview</h3>
             <div className="prose text-slate-600 leading-relaxed space-y-4">
               <p className="whitespace-pre-line">{room.description}</p>
+            </div>
+          </div>
+
+          {/* Property Policies & Utility Terms Card */}
+          <div className="space-y-4 bg-slate-900 text-white p-6 rounded-3xl border border-slate-800 shadow-sm">
+            <h3 className="text-xl font-extrabold text-white">Rental Terms & Included Utilities</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs sm:text-sm">
+              <div className="flex items-center gap-3 p-3 bg-slate-950/80 rounded-xl border border-slate-800">
+                <Droplet className="w-5 h-5 text-sky-400 shrink-0" />
+                <div>
+                  <span className="font-bold text-white block">Water Utility</span>
+                  <span className="text-slate-400">Free (Included in Rent)</span>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3 p-3 bg-slate-950/80 rounded-xl border border-slate-800">
+                <Zap className="w-5 h-5 text-amber-400 shrink-0" />
+                <div>
+                  <span className="font-bold text-white block">Electric Utility</span>
+                  <span className="text-slate-400">Individual Sub-Meter</span>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3 p-3 bg-slate-950/80 rounded-xl border border-slate-800">
+                <FileText className="w-5 h-5 text-indigo-400 shrink-0" />
+                <div>
+                  <span className="font-bold text-white block">Lease Agreement</span>
+                  <span className="text-slate-400">1-Year Minimum Term</span>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3 p-3 bg-slate-950/80 rounded-xl border border-slate-800">
+                <Bike className="w-5 h-5 text-emerald-400 shrink-0" />
+                <div>
+                  <span className="font-bold text-white block">Parking Space</span>
+                  <span className="text-slate-400">Motorcycle Only (Inside)</span>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3 p-3 bg-slate-950/80 rounded-xl border border-slate-800 sm:col-span-2">
+                <Slash className="w-5 h-5 text-rose-400 shrink-0" />
+                <div>
+                  <span className="font-bold text-white block">Pet Policy</span>
+                  <span className="text-slate-400">No Pets Allowed Inside Building</span>
+                </div>
+              </div>
             </div>
           </div>
 

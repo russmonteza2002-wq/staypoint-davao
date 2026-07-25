@@ -30,7 +30,7 @@ async function main() {
       name: 'Staypoint Davao',
       tagline: 'Modern, Secure & Comfort Urban Living in Davao City',
       description:
-        'Staypoint Davao offers fully-furnished studio and suite rooms featuring high-speed WiFi, 24/7 CCTV surveillance, private balconies, and proximity to Davao City commercial hubs.',
+        'Staypoint Davao offers fully-furnished studio and suite rooms featuring high-speed WiFi, free water supply, individual electric sub-meters, motorcycle parking inside premises, and 1-year lease contracts.',
       address: 'Rizal Extension, Poblacion District',
       city: 'Davao City',
       latitude: 7.073056,
@@ -44,7 +44,7 @@ async function main() {
       name: 'Staypoint Davao',
       tagline: 'Modern, Secure & Comfort Urban Living in Davao City',
       description:
-        'Staypoint Davao offers fully-furnished studio and suite rooms featuring high-speed WiFi, 24/7 CCTV surveillance, private balconies, and proximity to Davao City commercial hubs.',
+        'Staypoint Davao offers fully-furnished studio and suite rooms featuring high-speed WiFi, free water supply, individual electric sub-meters, motorcycle parking inside premises, and 1-year lease contracts.',
       address: 'Rizal Extension, Poblacion District',
       city: 'Davao City',
       latitude: 7.073056,
@@ -56,8 +56,13 @@ async function main() {
   });
   console.log(`🏢 Apartment Profile created: ${siteInfo.name}`);
 
-  // 3. Seed Default Amenities
+  // 3. Seed Default Amenities & Building Rules
   const amenityData = [
+    { name: 'Free Water Included', icon: 'droplet' },
+    { name: 'Own Electric Sub-Meter', icon: 'zap' },
+    { name: '1-Year Lease Contract (Min)', icon: 'file-text' },
+    { name: 'Motorcycle Parking (Inside)', icon: 'bike' },
+    { name: 'No Pets Allowed Policy', icon: 'slash' },
     { name: 'Air Conditioning', icon: 'snowflake' },
     { name: 'High-Speed WiFi', icon: 'wifi' },
     { name: 'Private Balcony', icon: 'sun' },
@@ -65,7 +70,6 @@ async function main() {
     { name: 'Kitchenette', icon: 'utensils' },
     { name: '24/7 Security CCTV', icon: 'shield' },
     { name: 'Water Heater', icon: 'flame' },
-    { name: 'Refrigerator', icon: 'archive' },
   ];
 
   const amenities = [];
@@ -86,7 +90,7 @@ async function main() {
       title: 'Deluxe Studio Unit 101',
       slug: 'deluxe-studio-unit-101',
       description:
-        'Bright and spacious deluxe studio featuring modern wooden interior accents, full kitchen counter, private bathroom, and large window with city views.',
+        'Bright and spacious deluxe studio featuring modern wooden interior accents, full kitchen counter, private bathroom, free water supply, individual electric sub-meter, and motorcycle parking.',
       pricePerMonth: 12500.0,
       depositAmount: 12500.0,
       sizeSqm: 28.5,
@@ -101,7 +105,7 @@ async function main() {
       title: 'Executive Suite 202 with Balcony',
       slug: 'executive-suite-202-with-balcony',
       description:
-        'Premium executive suite with an extended private balcony, split-type aircon, hot shower, king-size bed space, and built-in wardrobe closets.',
+        'Premium executive suite with an extended private balcony, split-type aircon, hot shower, free water supply, sub-metered electricity, and 1-year lease agreement.',
       pricePerMonth: 18000.0,
       depositAmount: 18000.0,
       sizeSqm: 36.0,
@@ -116,7 +120,7 @@ async function main() {
       title: 'Standard Single Room 305',
       slug: 'standard-single-room-305',
       description:
-        'Cozy single room perfect for working professionals or university students. Fully air-conditioned with study desk setup.',
+        'Cozy single room perfect for working professionals or university students. Fully air-conditioned, free water included, own electric meter.',
       pricePerMonth: 8500.0,
       depositAmount: 8500.0,
       sizeSqm: 20.0,
@@ -135,7 +139,7 @@ async function main() {
       create: {
         ...r,
         amenities: {
-          create: amenities.slice(0, 5).map((a) => ({
+          create: amenities.slice(0, 7).map((a) => ({
             amenity: { connect: { id: a.id } },
           })),
         },

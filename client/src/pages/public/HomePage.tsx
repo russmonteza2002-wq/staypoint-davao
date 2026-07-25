@@ -5,11 +5,14 @@ import {
   ShieldCheck,
   Wifi,
   Sparkles,
-  Search,
   ArrowRight,
   MessageSquare,
   MapPin,
-  CheckCircle2,
+  Droplet,
+  Zap,
+  FileText,
+  Bike,
+  Slash,
 } from 'lucide-react';
 import { RoomService } from '../../services/roomService';
 import { Room, ApartmentInfo } from '../../types';
@@ -39,7 +42,7 @@ export const HomePage: React.FC = () => {
   }, []);
 
   return (
-    <div className="space-y-24 pb-20">
+    <div className="space-y-20 sm:space-y-24 pb-20">
       {/* 1. HERO SECTION */}
       <section className="relative min-h-[85vh] flex items-center justify-center pt-12 pb-20 px-4 sm:px-6 lg:px-8 overflow-hidden bg-slate-950 text-white">
         {/* Background Image with Overlay */}
@@ -54,20 +57,20 @@ export const HomePage: React.FC = () => {
           <h1 className="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight leading-none text-white drop-shadow-md">
             Find Your Ideal Space at <br />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-400 via-sky-300 to-indigo-400">
-              {siteInfo?.name || 'Grand Horizon'}
+              {siteInfo?.name || 'Staypoint Davao'}
             </span>
           </h1>
 
           <p className="text-base sm:text-xl text-slate-300 max-w-3xl mx-auto leading-relaxed">
             {siteInfo?.tagline ||
-              'Discover fully-furnished apartment rooms with high-speed internet, private balconies, and 24/7 security. Direct in-app communication with property owner.'}
+              'Fully-furnished apartment rooms in Davao City featuring free water supply, individual electric sub-meters, high-speed WiFi, and 24/7 CCTV security.'}
           </p>
 
           {/* Quick Search Glass Box */}
           <div className="max-w-4xl mx-auto glass-card-dark p-4 rounded-3xl border border-slate-700/60 shadow-2xl flex flex-col md:flex-row gap-3 items-center">
             <div className="flex-1 w-full flex items-center gap-3 px-4 py-3 bg-slate-900/80 rounded-2xl border border-slate-800">
               <Building2 className="w-5 h-5 text-brand-400 shrink-0" />
-              <span className="text-sm font-semibold text-slate-200">Browsing Available Units</span>
+              <span className="text-sm font-semibold text-slate-200">Browsing Available Room Units</span>
             </div>
             <Link to="/rooms" className="w-full md:w-auto">
               <Button size="lg" className="w-full md:w-auto" rightIcon={<ArrowRight className="w-5 h-5" />}>
@@ -78,17 +81,64 @@ export const HomePage: React.FC = () => {
         </div>
       </section>
 
-      {/* 2. WHY CHOOSE US / FEATURES */}
+      {/* 2. RENTAL POLICIES & INCLUDED UTILITIES */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="bg-slate-900 p-8 sm:p-12 rounded-3xl border border-slate-800 shadow-2xl text-white space-y-8">
+          <div className="text-center space-y-3">
+            <span className="text-xs font-extrabold text-brand-400 uppercase tracking-widest">
+              Rental Policies & Utilities
+            </span>
+            <h2 className="text-3xl sm:text-4xl font-extrabold text-white">Transparent Lease Terms</h2>
+            <p className="text-slate-400 max-w-2xl mx-auto text-sm sm:text-base">
+              Everything you need to know before moving into Staypoint Davao.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+            <div className="p-5 bg-slate-950/80 rounded-2xl border border-slate-800 space-y-2 text-center">
+              <Droplet className="w-7 h-7 text-sky-400 mx-auto" />
+              <h4 className="font-extrabold text-sm text-white">Free Water Supply</h4>
+              <p className="text-xs text-slate-400">Water utility is included in monthly rent.</p>
+            </div>
+
+            <div className="p-5 bg-slate-950/80 rounded-2xl border border-slate-800 space-y-2 text-center">
+              <Zap className="w-7 h-7 text-amber-400 mx-auto" />
+              <h4 className="font-extrabold text-sm text-white">Own Electric Meter</h4>
+              <p className="text-xs text-slate-400">Individual sub-meter for actual usage.</p>
+            </div>
+
+            <div className="p-5 bg-slate-950/80 rounded-2xl border border-slate-800 space-y-2 text-center">
+              <FileText className="w-7 h-7 text-indigo-400 mx-auto" />
+              <h4 className="font-extrabold text-sm text-white">1-Year Minimum Term</h4>
+              <p className="text-xs text-slate-400">Minimum 1-year contract agreement.</p>
+            </div>
+
+            <div className="p-5 bg-slate-950/80 rounded-2xl border border-slate-800 space-y-2 text-center">
+              <Bike className="w-7 h-7 text-emerald-400 mx-auto" />
+              <h4 className="font-extrabold text-sm text-white">Motorcycle Parking</h4>
+              <p className="text-xs text-slate-400">Motorbike parking space inside premises.</p>
+            </div>
+
+            <div className="p-5 bg-slate-950/80 rounded-2xl border border-slate-800 space-y-2 text-center">
+              <Slash className="w-7 h-7 text-rose-400 mx-auto" />
+              <h4 className="font-extrabold text-sm text-white">No Pets Allowed</h4>
+              <p className="text-xs text-slate-400">Strict no-pets policy inside building.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 3. WHY CHOOSE US / FEATURES */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center space-y-4 mb-16">
           <span className="text-xs font-extrabold text-brand-600 uppercase tracking-widest">
             Property Highlights
           </span>
           <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900">
-            Why Tenants Choose Our Apartment
+            Why Tenants Choose Staypoint Davao
           </h2>
           <p className="text-slate-600 max-w-2xl mx-auto text-sm sm:text-base">
-            Designed for convenience, safety, and modern comfort.
+            Designed for convenience, safety, and modern urban comfort.
           </p>
         </div>
 
@@ -99,7 +149,7 @@ export const HomePage: React.FC = () => {
             </div>
             <h3 className="font-extrabold text-xl text-slate-900">24/7 Security & CCTV</h3>
             <p className="text-slate-600 text-sm leading-relaxed">
-              Complete peace of mind with round-the-clock security monitoring and secure card access gates.
+              Complete peace of mind with round-the-clock security monitoring and secure access gates.
             </p>
           </div>
 
@@ -117,9 +167,9 @@ export const HomePage: React.FC = () => {
             <div className="w-14 h-14 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center font-bold">
               <MessageSquare className="w-7 h-7" />
             </div>
-            <h3 className="font-extrabold text-xl text-slate-900">Direct In-App Chat</h3>
+            <h3 className="font-extrabold text-xl text-slate-900">Direct Inquiry Messaging</h3>
             <p className="text-slate-600 text-sm leading-relaxed">
-              Submit questions and receive owner responses directly on the website using tracking codes.
+              Submit questions and receive manager responses directly on the website using tracking codes.
             </p>
           </div>
 
@@ -129,13 +179,13 @@ export const HomePage: React.FC = () => {
             </div>
             <h3 className="font-extrabold text-xl text-slate-900">Prime Location</h3>
             <p className="text-slate-600 text-sm leading-relaxed">
-              Situated within walking distance of public transit, shopping malls, markets, and universities.
+              Situated in Poblacion District, Davao City within walking distance of transit, markets, and malls.
             </p>
           </div>
         </div>
       </section>
 
-      {/* 3. FEATURED ROOMS SHOWCASE */}
+      {/* 4. FEATURED ROOMS SHOWCASE */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between gap-4 mb-12">
           <div>
@@ -168,7 +218,7 @@ export const HomePage: React.FC = () => {
         )}
       </section>
 
-      {/* 4. MAP & LOCATION SECTION */}
+      {/* 5. MAP & LOCATION SECTION */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
         <div className="text-center space-y-3">
           <span className="text-xs font-extrabold text-brand-600 uppercase tracking-widest">
@@ -179,7 +229,7 @@ export const HomePage: React.FC = () => {
         <ApartmentMap info={siteInfo} />
       </section>
 
-      {/* 5. CTA BANNER */}
+      {/* 6. CTA BANNER */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="bg-slate-900 text-white rounded-3xl p-10 sm:p-16 border border-slate-800 shadow-2xl relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-8">
           <div className="space-y-4 max-w-xl text-center md:text-left z-10">
