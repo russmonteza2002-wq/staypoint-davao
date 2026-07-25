@@ -89,13 +89,17 @@ export class InquiryService {
       },
     });
 
-    // Send OTP to the user's real inbox — code is never exposed in the API response
-    await sendInquiryOtpEmail({
-      to: data.userEmail,
-      userName: data.userName,
-      referenceCode: inquiry.referenceCode,
-      otpCode: verificationCode,
-    });
+    // Send OTP to the user's real inbox — if email fails, log but don't block the response
+    try {
+      await sendInquiryOtpEmail({
+        to: data.userEmail,
+        userName: data.userName,
+        referenceCode: inquiry.referenceCode,
+        otpCode: verificationCode,
+      });
+    } catch (emailError) {
+      console.error('[createInquiry] Failed to send OTP email:', emailError);
+    }
 
     return {
       referenceCode: inquiry.referenceCode,
