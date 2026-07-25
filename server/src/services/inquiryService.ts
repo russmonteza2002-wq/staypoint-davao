@@ -10,10 +10,19 @@ export class InquiryService {
     try {
       const domain = email.split('@')[1];
       if (!domain) return false;
-      const mxRecords = await dns.promises.resolveMx(domain);
-      return Array.isArray(mxRecords) && mxRecords.length > 0;
-    } catch (error) {
-      return false;
+
+      // Timeout after 3 seconds to prevent hanging on slow DNS servers
+      const timeout = new Promise<boolean>((resolve) =>
+        setTimeout(() => resolve(true), 3000)
+      );
+      const mxCheck = dns.promises.resolveMx(domain).then(
+        (records) => Array.isArray(records) && records.length > 0,
+        () => false
+      );
+
+      return await Promise.race([mxCheck, timeout]);
+    } catch {
+      return true; // On any unexpected error, allow submission
     }
   }
 
