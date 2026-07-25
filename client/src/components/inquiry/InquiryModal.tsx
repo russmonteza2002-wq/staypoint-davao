@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -114,6 +114,54 @@ export const InquiryModal: React.FC<InquiryModalProps> = ({
   const { showToast } = useToast();
   const [step, setStep] = useState<'FORM' | 'VERIFY' | 'SUCCESS'>('FORM');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // 40-second resend cooldown timer
+  const [resendCooldown, setResendCooldown] = useState(0);
+  const [isResending, setIsResending] = useState(false);
+  const cooldownRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // Start the 40s countdown whenever we reach the VERIFY step
+  useEffect(() => {
+    if (step === 'VERIFY') {
+      setResendCooldown(40);
+      cooldownRef.current = setInterval(() => {
+        setResendCooldown((prev) => {
+          if (prev <= 1) {
+            clearInterval(cooldownRef.current!);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
+    return () => {
+      if (cooldownRef.current) clearInterval(cooldownRef.current);
+    };
+  }, [step]);
+
+  const handleResendCode = async () => {
+    if (!pendingData || resendCooldown > 0) return;
+    setIsResending(true);
+    try {
+      await InquiryService.resendVerificationCode(pendingData.referenceCode);
+      showToast('success', '📬 New Code Sent!', `A fresh 6-digit code has been sent to ${pendingData.userEmail}.`);
+      // Restart the 40s cooldown
+      setResendCooldown(40);
+      cooldownRef.current = setInterval(() => {
+        setResendCooldown((prev) => {
+          if (prev <= 1) {
+            clearInterval(cooldownRef.current!);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    } catch (error: any) {
+      showToast('error', 'Resend Failed', error.response?.data?.message || 'Could not resend code.');
+    } finally {
+      setIsResending(false);
+    }
+  };
 
   const [pendingData, setPendingData] = useState<{
     referenceCode: string;
@@ -285,10 +333,29 @@ export const InquiryModal: React.FC<InquiryModalProps> = ({
             >
               Verify Code & Activate Inquiry
             </Button>
+
+            {/* 40-second Resend Cooldown Button */}
+            <button
+              type="button"
+              onClick={handleResendCode}
+              disabled={resendCooldown > 0 || isResending}
+              className={`w-full py-2.5 rounded-xl text-xs font-bold transition-all border ${
+                resendCooldown > 0 || isResending
+                  ? 'border-slate-200 bg-slate-100 text-slate-400 cursor-not-allowed'
+                  : 'border-brand-200 bg-brand-50 text-brand-600 hover:bg-brand-100 cursor-pointer'
+              }`}
+            >
+              {isResending
+                ? '⏳ Sending new code...'
+                : resendCooldown > 0
+                ? `🕐 Resend Code in ${resendCooldown}s`
+                : '🔁 Resend Verification Code'}
+            </button>
+
             <button
               type="button"
               onClick={() => setStep('FORM')}
-              className="text-xs font-bold text-slate-500 hover:text-slate-800"
+              className="w-full text-xs font-bold text-slate-400 hover:text-slate-700 py-1"
             >
               ← Edit Email Address
             </button>

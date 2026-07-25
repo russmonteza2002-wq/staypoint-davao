@@ -14,6 +14,7 @@ router.post(
 );
 
 router.post('/verify-code', InquiryController.verifyInquiryCode);
+router.post('/resend-code', InquiryController.resendVerificationCode);
 
 router.get('/track/:refCode', InquiryController.trackInquiry);
 

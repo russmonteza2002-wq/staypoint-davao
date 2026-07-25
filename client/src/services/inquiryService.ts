@@ -15,6 +15,11 @@ export class InquiryService {
     return res.data;
   }
 
+  public static async resendVerificationCode(referenceCode: string): Promise<ApiResponse<any>> {
+    const res = await apiClient.post<ApiResponse<any>>('/inquiries/resend-code', { referenceCode });
+    return res.data;
+  }
+
   public static async trackInquiry(refCode: string, token?: string): Promise<ApiResponse<Inquiry>> {
     const res = await apiClient.get<ApiResponse<Inquiry>>(`/inquiries/track/${refCode}`, {
       params: { token },

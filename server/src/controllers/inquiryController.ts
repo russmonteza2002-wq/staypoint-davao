@@ -37,6 +37,24 @@ export class InquiryController {
     }
   };
 
+  public static resendVerificationCode = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> => {
+    try {
+      const { referenceCode } = req.body;
+      const result = await InquiryService.resendVerificationCode(referenceCode);
+      res.status(200).json({
+        success: true,
+        message: 'Verification code resent successfully!',
+        data: result,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
   public static trackInquiry = async (
     req: Request,
     res: Response,

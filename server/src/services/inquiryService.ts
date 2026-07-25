@@ -129,6 +129,41 @@ export class InquiryService {
     };
   }
 
+  /**
+   * Resends a fresh 6-digit OTP code to the user's email inbox
+   */
+  public static async resendVerificationCode(referenceCode: string) {
+    const inquiry = await prisma.inquiry.findUnique({
+      where: { referenceCode },
+    });
+
+    if (!inquiry) {
+      throw new NotFoundError(`Inquiry '${referenceCode}' not found`);
+    }
+
+    if (inquiry.isVerified) {
+      throw new BadRequestError('This inquiry email is already verified.');
+    }
+
+    // Generate a fresh 6-digit code
+    const newCode = Math.floor(100000 + Math.random() * 900000).toString();
+
+    await prisma.inquiry.update({
+      where: { id: inquiry.id },
+      data: { verificationCode: newCode },
+    });
+
+    // Send fresh code to user's real email inbox
+    await sendInquiryOtpEmail({
+      to: inquiry.userEmail,
+      userName: inquiry.userName,
+      referenceCode: inquiry.referenceCode,
+      otpCode: newCode,
+    });
+
+    return { success: true, userEmail: inquiry.userEmail };
+  }
+
   public static async trackInquiry(referenceCode: string, rawToken?: string) {
     const inquiry = await prisma.inquiry.findUnique({
       where: { referenceCode },
