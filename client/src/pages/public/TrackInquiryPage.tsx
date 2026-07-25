@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Search, MessageSquare, Send, Clock, User, ShieldCheck, CheckCircle2 } from 'lucide-react';
+import { Search, Send, User, ShieldCheck } from 'lucide-react';
 import { InquiryService } from '../../services/inquiryService';
 import { Inquiry } from '../../types';
 import { Input } from '../../components/ui/Input';
@@ -12,65 +12,51 @@ export const TrackInquiryPage: React.FC = () => {
   const [searchParams] = useSearchParams();
   const { showToast } = useToast();
 
+  // Only reference code is needed — no access token required
   const [refCodeInput, setRefCodeInput] = useState(searchParams.get('code') || '');
-  const [accessTokenInput, setAccessTokenInput] = useState(searchParams.get('token') || '');
-
   const [inquiry, setInquiry] = useState<Inquiry | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-
   const [replyMessage, setReplyMessage] = useState('');
   const [isSendingReply, setIsSendingReply] = useState(false);
 
-  const fetchThread = async (code: string, token?: string) => {
+  const fetchThread = async (code: string) => {
     if (!code) return;
     setIsLoading(true);
     try {
-      const res = await InquiryService.trackInquiry(code, token);
+      const res = await InquiryService.trackInquiry(code);
       setInquiry(res.data);
     } catch (error: any) {
-      showToast('error', 'Lookup Error', error.response?.data?.message || 'Invalid tracking code');
+      showToast('error', 'Not Found', error.response?.data?.message || 'Invalid reference code');
       setInquiry(null);
     } finally {
       setIsLoading(false);
     }
   };
 
+  // Auto-load when arriving from Gmail email link
   useEffect(() => {
     const code = searchParams.get('code');
-    const token = searchParams.get('token');
-    if (code) {
-      fetchThread(code, token || undefined);
-    }
+    if (code) fetchThread(code);
   }, [searchParams]);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!refCodeInput) return;
-    fetchThread(refCodeInput.trim(), accessTokenInput.trim() || undefined);
+    fetchThread(refCodeInput.trim().toUpperCase());
   };
 
   const handleSendUserReply = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!inquiry || !replyMessage.trim()) return;
 
-    if (!accessTokenInput) {
-      showToast('warning', 'Access Token Required', 'Please enter your inquiry access token to post a reply.');
-      return;
-    }
-
     setIsSendingReply(true);
     try {
-      await InquiryService.addUserReply(
-        inquiry.referenceCode,
-        accessTokenInput.trim(),
-        replyMessage.trim()
-      );
-
-      showToast('success', 'Reply Sent!', 'Your message has been posted to the manager.');
+      await InquiryService.addUserReply(inquiry.referenceCode, replyMessage.trim());
+      showToast('success', 'Reply Sent!', 'Your follow-up message has been posted to the manager.');
       setReplyMessage('');
-      fetchThread(inquiry.referenceCode, accessTokenInput.trim());
+      fetchThread(inquiry.referenceCode);
     } catch (error: any) {
-      showToast('error', 'Reply Failed', error.response?.data?.message || 'Unauthorized reply attempt');
+      showToast('error', 'Reply Failed', error.response?.data?.message || 'Could not send reply.');
     } finally {
       setIsSendingReply(false);
     }
@@ -81,11 +67,11 @@ export const TrackInquiryPage: React.FC = () => {
       {/* Title */}
       <div className="text-center space-y-3">
         <span className="text-xs font-extrabold text-brand-600 uppercase tracking-widest">
-          In-App Communication
+          Inquiry Thread
         </span>
-        <h1 className="text-4xl font-extrabold text-slate-900">Track Inquiry & Replies</h1>
+        <h1 className="text-4xl font-extrabold text-slate-900">Track Your Inquiry</h1>
         <p className="text-slate-600 text-sm sm:text-base max-w-xl mx-auto">
-          Enter your unique reference code (e.g. INQ-98A2F) to view manager replies and continue messaging.
+          Enter your unique reference code (e.g. INQ-98A2F) to view manager replies and send a follow-up message.
         </p>
       </div>
 
@@ -93,10 +79,10 @@ export const TrackInquiryPage: React.FC = () => {
       <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200/80 shadow-md">
         <form onSubmit={handleSearchSubmit} className="space-y-4">
           <Input
-            label="Reference Code"
+            label="Your Inquiry Reference Code"
             placeholder="e.g. INQ-98A2F"
             value={refCodeInput}
-            onChange={(e) => setRefCodeInput(e.target.value)}
+            onChange={(e) => setRefCodeInput(e.target.value.toUpperCase())}
             leftIcon={<Search className="w-4 h-4" />}
           />
           <Button
@@ -105,15 +91,15 @@ export const TrackInquiryPage: React.FC = () => {
             isLoading={isLoading}
             leftIcon={<Search className="w-4 h-4" />}
           >
-            Find Inquiry Thread
+            Find My Inquiry Thread
           </Button>
         </form>
       </div>
 
-      {/* Inquiry Thread Timeline Display */}
+      {/* Inquiry Thread */}
       {inquiry && (
         <div className="bg-white rounded-3xl border border-slate-200/80 shadow-xl overflow-hidden space-y-6 p-6 sm:p-8">
-          {/* Header Summary */}
+          {/* Header */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-6">
             <div>
               <div className="flex items-center gap-3 mb-1">
@@ -127,10 +113,9 @@ export const TrackInquiryPage: React.FC = () => {
                 <strong className="text-slate-800">{inquiry.userName}</strong>
               </p>
             </div>
-
             {inquiry.room && (
               <div className="bg-slate-50 p-3 rounded-2xl border border-slate-200 text-xs">
-                <span className="text-slate-500 block font-semibold">Related Room Listing:</span>
+                <span className="text-slate-500 block font-semibold">Related Room:</span>
                 <span className="font-bold text-slate-900">{inquiry.room.title}</span>
               </div>
             )}
@@ -155,7 +140,6 @@ export const TrackInquiryPage: React.FC = () => {
                     <span>•</span>
                     <span>{new Date(msg.createdAt).toLocaleString()}</span>
                   </div>
-
                   <div
                     className={`max-w-lg p-4 rounded-2xl text-sm leading-relaxed ${
                       isAdmin
@@ -170,43 +154,26 @@ export const TrackInquiryPage: React.FC = () => {
             })}
           </div>
 
-          {/* Reply Form — only shown if user has their access token */}
-          {accessTokenInput ? (
-            <form onSubmit={handleSendUserReply} className="space-y-3 pt-4 border-t border-slate-100">
-              <textarea
-                rows={3}
-                placeholder="Type your reply message here..."
-                value={replyMessage}
-                onChange={(e) => setReplyMessage(e.target.value)}
-                className="w-full rounded-2xl border border-slate-300 p-3.5 text-sm text-slate-900 bg-white focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
-              />
-              <Button
-                type="submit"
-                isLoading={isSendingReply}
-                leftIcon={<Send className="w-4 h-4" />}
-              >
-                Post Follow-Up Reply
-              </Button>
-            </form>
-          ) : (
-            <div className="pt-4 border-t border-slate-100">
-              <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 text-center space-y-2">
-                <p className="text-xs font-extrabold text-amber-700 uppercase tracking-wider">🔑 Want to send a follow-up reply?</p>
-                <p className="text-xs text-amber-700 leading-relaxed">
-                  You are viewing this thread via your email link. To post a follow-up reply,
-                  please enter your <strong>access token</strong> below.
-                  You received this token when you first submitted your inquiry.
-                </p>
-                <Input
-                  label=""
-                  type="password"
-                  placeholder="Paste your inquiry access token here..."
-                  value={accessTokenInput}
-                  onChange={(e) => setAccessTokenInput(e.target.value)}
-                />
-              </div>
-            </div>
-          )}
+          {/* Follow-up Reply Form — no token needed */}
+          <form onSubmit={handleSendUserReply} className="space-y-3 pt-4 border-t border-slate-100">
+            <label className="text-xs font-extrabold text-slate-700 uppercase tracking-wider block">
+              Send a Follow-Up Message
+            </label>
+            <textarea
+              rows={3}
+              placeholder="Type your follow-up message here..."
+              value={replyMessage}
+              onChange={(e) => setReplyMessage(e.target.value)}
+              className="w-full rounded-2xl border border-slate-300 p-3.5 text-sm text-slate-900 bg-white focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
+            />
+            <Button
+              type="submit"
+              isLoading={isSendingReply}
+              leftIcon={<Send className="w-4 h-4" />}
+            >
+              Post Follow-Up Reply
+            </Button>
+          </form>
         </div>
       )}
     </div>

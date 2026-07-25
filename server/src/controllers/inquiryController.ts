@@ -80,12 +80,8 @@ export class InquiryController {
   ): Promise<void> => {
     try {
       const { refCode } = req.params;
-      const { accessToken, message } = req.body;
-      const reply = await InquiryService.addUserReply(
-        refCode,
-        accessToken,
-        message
-      );
+      const { message } = req.body;
+      const reply = await InquiryService.addUserReply(refCode, message);
       res.status(201).json({
         success: true,
         message: 'Reply sent successfully',

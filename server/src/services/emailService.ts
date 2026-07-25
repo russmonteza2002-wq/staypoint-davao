@@ -104,9 +104,8 @@ export async function sendAdminReplyEmail(params: {
   userName: string;
   referenceCode: string;
   replyMessage: string;
-  accessToken?: string;
 }): Promise<void> {
-  const { to, userName, referenceCode, replyMessage, accessToken } = params;
+  const { to, userName, referenceCode, replyMessage } = params;
 
   // Link goes directly to the thread by reference code only — no token needed to view
   const trackUrl = `https://staypoint-davao.vercel.app/track-inquiry?code=${referenceCode}`;

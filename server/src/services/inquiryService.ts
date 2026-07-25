@@ -193,10 +193,19 @@ export class InquiryService {
 
   public static async addUserReply(
     referenceCode: string,
-    rawAccessToken: string,
     message: string
   ) {
-    const inquiry = await this.trackInquiry(referenceCode, rawAccessToken);
+    const inquiry = await prisma.inquiry.findUnique({
+      where: { referenceCode },
+    });
+
+    if (!inquiry) {
+      throw new NotFoundError(`Inquiry '${referenceCode}' not found`);
+    }
+
+    if (!inquiry.isVerified) {
+      throw new BadRequestError('This inquiry has not been email-verified yet.');
+    }
 
     const reply = await prisma.reply.create({
       data: {

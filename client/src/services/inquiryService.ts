@@ -27,9 +27,8 @@ export class InquiryService {
     return res.data;
   }
 
-  public static async addUserReply(refCode: string, accessToken: string, message: string): Promise<ApiResponse<Reply>> {
+  public static async addUserReply(refCode: string, message: string): Promise<ApiResponse<Reply>> {
     const res = await apiClient.post<ApiResponse<Reply>>(`/inquiries/track/${refCode}/reply`, {
-      accessToken,
       message,
     });
     return res.data;

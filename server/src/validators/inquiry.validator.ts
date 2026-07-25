@@ -85,7 +85,6 @@ export const createInquirySchema = z.object({
 
 export const userReplySchema = z.object({
   body: z.object({
-    accessToken: z.string().min(1, 'Access token is required'),
     message: z.string().trim().min(2, 'Reply message cannot be empty'),
   }),
 });
