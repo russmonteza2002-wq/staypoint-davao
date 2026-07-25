@@ -23,6 +23,10 @@ export const Badge: React.FC<BadgeProps> = ({ status, className = '' }) => {
         return 'bg-purple-500/10 text-purple-600 border-purple-500/20';
       case 'CLOSED':
         return 'bg-slate-500/10 text-slate-600 border-slate-500/20';
+      case 'MAINTENANCE':
+        return 'bg-amber-500/15 text-amber-700 border-amber-500/30';
+      case 'UNAVAILABLE':
+        return 'bg-slate-500/15 text-slate-700 border-slate-500/30';
       default:
         return 'bg-slate-500/10 text-slate-600 border-slate-500/20';
     }

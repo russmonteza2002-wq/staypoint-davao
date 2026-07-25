@@ -153,6 +153,40 @@ export const AdminInquiriesPage: React.FC = () => {
               </div>
             </div>
 
+            {/* Workflow Timestamps Timeline */}
+            <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-200/80 grid grid-cols-2 sm:grid-cols-4 gap-3 text-[11px]">
+              <div>
+                <span className="text-slate-400 block font-semibold uppercase tracking-wider">Submitted</span>
+                <span className="font-bold text-slate-700">
+                  {new Date(selectedInquiry.createdAt).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                </span>
+              </div>
+              <div>
+                <span className="text-slate-400 block font-semibold uppercase tracking-wider">First Viewed</span>
+                <span className="font-bold text-slate-700">
+                  {selectedInquiry.viewedAt
+                    ? new Date(selectedInquiry.viewedAt).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+                    : '—'}
+                </span>
+              </div>
+              <div>
+                <span className="text-slate-400 block font-semibold uppercase tracking-wider">Replied</span>
+                <span className="font-bold text-slate-700">
+                  {selectedInquiry.repliedAt
+                    ? new Date(selectedInquiry.repliedAt).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+                    : '—'}
+                </span>
+              </div>
+              <div>
+                <span className="text-slate-400 block font-semibold uppercase tracking-wider">Closed</span>
+                <span className="font-bold text-slate-700">
+                  {selectedInquiry.closedAt
+                    ? new Date(selectedInquiry.closedAt).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+                    : '—'}
+                </span>
+              </div>
+            </div>
+
             {/* Conversation Log */}
             <div className="space-y-3 max-h-[350px] overflow-y-auto p-4 bg-slate-50 rounded-2xl border border-slate-200">
               {selectedInquiry.replies?.map((msg) => (

@@ -232,18 +232,29 @@ export const RoomDetailPage: React.FC = () => {
             </div>
 
             <div className="space-y-3">
-              <Button
-                variant="primary"
-                size="lg"
-                className="w-full"
-                onClick={() => setIsInquiryModalOpen(true)}
-                leftIcon={<MessageSquare className="w-5 h-5" />}
-              >
-                Inquire & Schedule Viewing
-              </Button>
-              <p className="text-xs text-center text-slate-500 leading-relaxed">
-                Submit an online inquiry to check viewing dates and ask questions directly to the property manager.
-              </p>
+              {room.status === 'AVAILABLE' ? (
+                <>
+                  <Button
+                    variant="primary"
+                    size="lg"
+                    className="w-full"
+                    onClick={() => setIsInquiryModalOpen(true)}
+                    leftIcon={<MessageSquare className="w-5 h-5" />}
+                  >
+                    Inquire & Schedule Viewing
+                  </Button>
+                  <p className="text-xs text-center text-slate-500 leading-relaxed">
+                    Submit an online inquiry to check viewing dates and ask questions directly to the property manager.
+                  </p>
+                </>
+              ) : (
+                <div className="p-4 bg-slate-100 border border-slate-200 rounded-2xl text-center space-y-2">
+                  <Badge status={room.status} />
+                  <p className="text-xs font-semibold text-slate-600">
+                    This unit is currently <strong>{room.status.toLowerCase().replace('_', ' ')}</strong> and not accepting new inquiries.
+                  </p>
+                </div>
+              )}
             </div>
           </div>
         </div>

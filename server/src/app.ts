@@ -1,13 +1,14 @@
 /**
  * Express Application Server Configuration
  * 
- * Configures core security middlewares (CORS, Helmet, Rate Limiting),
- * body parsers, static asset serving, REST API routing mounts, and global error handling.
+ * Configures core security middlewares (CORS, Helmet with CSP/HSTS, Rate Limiting),
+ * body & cookie parsers, static asset serving, REST API routing mounts, and global error handling.
  */
 
 import express, { Application } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
+import cookieParser from 'cookie-parser';
 import path from 'path';
 import { env } from './config/env';
 import { errorHandler } from './middlewares/errorHandler';
@@ -24,18 +25,40 @@ const app: Application = express();
 
 /**
  * 1. Security & CORS Middlewares
- * - Helmet adds standard secure HTTP headers
- * - CORS permits request headers from frontend client domains (Vercel & localhost)
+ * - Helmet configures Content Security Policy, HSTS, X-Frame-Options, Referrer-Policy
+ * - CORS permits request headers & credentials from client domains (Vercel & localhost)
  */
-app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
+app.use(
+  helmet({
+    crossOriginResourcePolicy: { policy: 'cross-origin' },
+    hsts: {
+      maxAge: 31536000, // 1 year
+      includeSubDomains: true,
+      preload: true,
+    },
+    referrerPolicy: { policy: 'no-referrer-when-downgrade' },
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://maps.googleapis.com"],
+        styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+        fontSrc: ["'self'", "https://fonts.gstatic.com"],
+        imgSrc: ["'self'", "data:", "blob:", "https://maps.gstatic.com", "https://*.googleapis.com"],
+        connectSrc: ["'self'", "https://maps.googleapis.com", "https://*.supabase.co", "https://*.supabase.com"],
+      },
+    },
+  })
+);
+
 app.use(
   cors({
-    origin: true, // Allow client origins (Vercel, localhost)
+    origin: true, // Allow client origins with credentials
     credentials: true,
   })
 );
 
-// 2. Request Body Parsing Middlewares
+// 2. Request Body & Cookie Parsing Middlewares
+app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -56,7 +79,6 @@ app.use('/api/v1/site', siteRoutes);         // Property info & site settings ro
 
 /**
  * 6. Health Check Endpoint
- * Used by cloud uptime monitors to verify server availability.
  */
 app.get('/health', (_req, res) => {
   res.status(200).json({ status: 'UP', timestamp: new Date().toISOString() });
@@ -64,7 +86,6 @@ app.get('/health', (_req, res) => {
 
 /**
  * 7. Global Centralized Error Handler Middleware
- * Catches all unhandled errors thrown across async route handlers.
  */
 app.use(errorHandler);
 

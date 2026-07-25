@@ -17,6 +17,8 @@ enum RoomStatus {
   AVAILABLE
   RESERVED
   OCCUPIED
+  MAINTENANCE
+  UNAVAILABLE
 }
 
 enum InquiryStatus {
@@ -32,13 +34,15 @@ enum SenderType {
 }
 
 model Admin {
-  id           String      @id @default(uuid()) @db.Uuid
-  name         String      @db.VarChar(100)
-  email        String      @unique @db.VarChar(150)
-  passwordHash String      @map("password_hash") @db.VarChar(255)
-  role         AdminRole   @default(ADMIN)
-  createdAt    DateTime    @default(now()) @map("created_at")
-  updatedAt    DateTime    @updatedAt @map("updated_at")
+  id                    String      @id @default(uuid()) @db.Uuid
+  name                  String      @db.VarChar(100)
+  email                 String      @unique @db.VarChar(150)
+  passwordHash          String      @map("password_hash") @db.VarChar(255)
+  refreshToken          String?     @map("refresh_token") @db.VarChar(500)
+  refreshTokenExpiresAt DateTime?   @map("refresh_token_expires_at")
+  role                  AdminRole   @default(ADMIN)
+  createdAt             DateTime    @default(now()) @map("created_at")
+  updatedAt             DateTime    @updatedAt @map("updated_at")
 
   replies      Reply[]
   activityLogs ActivityLog[]
@@ -121,6 +125,10 @@ model Inquiry {
   message              String        @db.Text
   preferredViewingDate DateTime?     @map("preferred_viewing_date")
   status               InquiryStatus @default(NEW)
+  viewedAt             DateTime?     @map("viewed_at")
+  repliedAt            DateTime?     @map("replied_at")
+  scheduledAt          DateTime?     @map("scheduled_at")
+  closedAt             DateTime?     @map("closed_at")
   createdAt            DateTime      @default(now()) @map("created_at")
   updatedAt            DateTime      @updatedAt @map("updated_at")
 

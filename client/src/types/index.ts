@@ -1,4 +1,4 @@
-export type RoomStatus = 'AVAILABLE' | 'RESERVED' | 'OCCUPIED';
+export type RoomStatus = 'AVAILABLE' | 'RESERVED' | 'OCCUPIED' | 'MAINTENANCE' | 'UNAVAILABLE';
 export type InquiryStatus = 'NEW' | 'REPLIED' | 'VIEWING_SCHEDULED' | 'CLOSED';
 export type SenderType = 'ADMIN' | 'USER';
 
@@ -64,6 +64,10 @@ export interface Inquiry {
   message: string;
   preferredViewingDate?: string;
   status: InquiryStatus;
+  viewedAt?: string;
+  repliedAt?: string;
+  scheduledAt?: string;
+  closedAt?: string;
   createdAt: string;
   updatedAt: string;
   room?: {

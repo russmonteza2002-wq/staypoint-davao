@@ -39,6 +39,22 @@ export class InquiryService {
       }
     }
 
+    // 3. Verify target room availability if roomId is provided
+    if (data.roomId) {
+      const room = await prisma.room.findUnique({
+        where: { id: data.roomId },
+        select: { status: true, title: true },
+      });
+      if (!room) {
+        throw new BadRequestError('Selected room listing does not exist.');
+      }
+      if (room.status !== 'AVAILABLE') {
+        throw new BadRequestError(
+          `'${room.title}' is currently ${room.status.toLowerCase().replace('_', ' ')} and not accepting new inquiries at this time.`
+        );
+      }
+    }
+
     // Generate tokens and reference code
     const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
     const referenceCode = generateReferenceCode();
@@ -269,6 +285,14 @@ export class InquiryService {
       throw new NotFoundError('Inquiry not found');
     }
 
+    // Record viewedAt timestamp if opening for the first time
+    if (!inquiry.viewedAt) {
+      await prisma.inquiry.update({
+        where: { id },
+        data: { viewedAt: new Date() },
+      });
+    }
+
     return inquiry;
   }
 
@@ -287,6 +311,17 @@ export class InquiryService {
     const senderName = admin ? admin.name : 'Property Manager';
 
     const newStatus = updateStatusTo || InquiryStatus.REPLIED;
+    const now = new Date();
+
+    const updateData: any = {
+      status: newStatus,
+      repliedAt: now,
+    };
+    if (newStatus === InquiryStatus.VIEWING_SCHEDULED && !inquiry.scheduledAt) {
+      updateData.scheduledAt = now;
+    } else if (newStatus === InquiryStatus.CLOSED && !inquiry.closedAt) {
+      updateData.closedAt = now;
+    }
 
     const [reply] = await Promise.all([
       prisma.reply.create({
@@ -300,7 +335,7 @@ export class InquiryService {
       }),
       prisma.inquiry.update({
         where: { id },
-        data: { status: newStatus },
+        data: updateData,
       }),
     ]);
 
@@ -313,7 +348,6 @@ export class InquiryService {
         replyMessage: message,
       });
     } catch (emailError) {
-      // Log but do not throw — reply is already saved, email failure should not break the flow
       console.error('[adminReply] Failed to send reply notification email:', emailError);
     }
 
@@ -326,9 +360,20 @@ export class InquiryService {
       throw new NotFoundError('Inquiry not found');
     }
 
+    const now = new Date();
+    const updateData: any = { status };
+
+    if (status === InquiryStatus.VIEWING_SCHEDULED) {
+      updateData.scheduledAt = now;
+    } else if (status === InquiryStatus.CLOSED) {
+      updateData.closedAt = now;
+    } else if (status === InquiryStatus.REPLIED) {
+      updateData.repliedAt = now;
+    }
+
     return prisma.inquiry.update({
       where: { id },
-      data: { status },
+      data: updateData,
     });
   }
 }

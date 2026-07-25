@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
+const ROOM_STATUS_VALUES = ['AVAILABLE', 'RESERVED', 'OCCUPIED', 'MAINTENANCE', 'UNAVAILABLE'] as const;
+
 export const createRoomSchema = z.object({
   body: z.object({
     roomNumber: z.string().min(1, 'Room number is required').max(20),
@@ -11,7 +13,7 @@ export const createRoomSchema = z.object({
     floor: z.number().int('Floor must be an integer'),
     bedroomCount: z.number().int().min(1).default(1),
     bathroomCount: z.number().int().min(1).default(1),
-    status: z.enum(['AVAILABLE', 'RESERVED', 'OCCUPIED']).default('AVAILABLE'),
+    status: z.enum(ROOM_STATUS_VALUES).default('AVAILABLE'),
     isFeatured: z.boolean().default(false),
     amenityIds: z.array(z.string().uuid()).optional().default([]),
   }),
@@ -23,13 +25,13 @@ export const updateRoomSchema = z.object({
 
 export const updateRoomStatusSchema = z.object({
   body: z.object({
-    status: z.enum(['AVAILABLE', 'RESERVED', 'OCCUPIED']),
+    status: z.enum(ROOM_STATUS_VALUES),
   }),
 });
 
 export const getRoomsQuerySchema = z.object({
   query: z.object({
-    status: z.enum(['AVAILABLE', 'RESERVED', 'OCCUPIED']).optional(),
+    status: z.enum(ROOM_STATUS_VALUES).optional(),
     minPrice: z.string().optional(),
     maxPrice: z.string().optional(),
     floor: z.string().optional(),
