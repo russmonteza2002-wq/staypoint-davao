@@ -2,19 +2,36 @@ import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Send, CheckCircle, Copy, Calendar, User, Mail, Phone, MessageSquare } from 'lucide-react';
+import { Send, CheckCircle, Copy, Calendar, User, Mail, Phone } from 'lucide-react';
 import { Modal } from '../ui/Modal';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
 import { InquiryService } from '../../services/inquiryService';
 import { useToast } from '../../context/ToastContext';
 
+// Strict regex requiring valid TLD domain extension (.com, .ph, .net, .org, etc.)
+const VALID_EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
 const inquirySchema = z.object({
-  userName: z.string().min(2, 'Name is required'),
-  userEmail: z.string().email('Invalid email address'),
+  userName: z.string().trim().min(2, 'Name is required (at least 2 characters)'),
+  userEmail: z
+    .string()
+    .trim()
+    .toLowerCase()
+    .email('Invalid email address format')
+    .refine((email: string) => VALID_EMAIL_REGEX.test(email), {
+      message: 'Please enter a valid email address (e.g. name@gmail.com)',
+    })
+    .refine(
+      (email: string) =>
+        !['test@test.com', 'admin@admin.com', 'abc@abc.com', 'user@example.com'].includes(email),
+      {
+        message: 'Please enter a real, active personal or work email address',
+      }
+    ),
   userPhone: z.string().optional(),
   preferredViewingDate: z.string().optional(),
-  message: z.string().min(10, 'Message must be at least 10 characters'),
+  message: z.string().trim().min(10, 'Message must be at least 10 characters long'),
 });
 
 type InquiryFormData = z.infer<typeof inquirySchema>;
@@ -64,7 +81,7 @@ export const InquiryModal: React.FC<InquiryModalProps> = ({
       showToast('success', 'Inquiry Submitted!', 'Save your reference code to track manager replies.');
       reset();
     } catch (error: any) {
-      showToast('error', 'Submission Failed', error.response?.data?.message || 'Please check input form');
+      showToast('error', 'Submission Failed', error.response?.data?.message || 'Please check email address and input fields');
     } finally {
       setIsSubmitting(false);
     }
@@ -126,7 +143,7 @@ export const InquiryModal: React.FC<InquiryModalProps> = ({
           <Input
             label="Full Name"
             placeholder="John Doe"
-            leftIcon={<User className="w-4 h-4" />}
+            leftIcon={<User className="w-4 h-4 text-slate-500" />}
             {...register('userName')}
             error={errors.userName?.message}
           />
@@ -135,8 +152,8 @@ export const InquiryModal: React.FC<InquiryModalProps> = ({
             <Input
               label="Email Address"
               type="email"
-              placeholder="john@example.com"
-              leftIcon={<Mail className="w-4 h-4" />}
+              placeholder="e.g. name@gmail.com"
+              leftIcon={<Mail className="w-4 h-4 text-slate-500" />}
               {...register('userEmail')}
               error={errors.userEmail?.message}
             />
@@ -144,7 +161,7 @@ export const InquiryModal: React.FC<InquiryModalProps> = ({
             <Input
               label="Phone Number (Optional)"
               placeholder="+63 917 000 0000"
-              leftIcon={<Phone className="w-4 h-4" />}
+              leftIcon={<Phone className="w-4 h-4 text-slate-500" />}
               {...register('userPhone')}
               error={errors.userPhone?.message}
             />
@@ -153,7 +170,7 @@ export const InquiryModal: React.FC<InquiryModalProps> = ({
           <Input
             label="Preferred Viewing Date (Optional)"
             type="date"
-            leftIcon={<Calendar className="w-4 h-4" />}
+            leftIcon={<Calendar className="w-4 h-4 text-slate-500" />}
             {...register('preferredViewingDate')}
             error={errors.preferredViewingDate?.message}
           />
