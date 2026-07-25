@@ -14,7 +14,11 @@ export class AuthController {
         message: 'Login successful',
         data: result,
       });
-    } catch (error) {
+    } catch (error: any) {
+      console.error('🔑 LOGIN_ATTEMPT_FAILED:', {
+        email: req.body?.email,
+        errorMessage: error.message,
+      });
       next(error);
     }
   };

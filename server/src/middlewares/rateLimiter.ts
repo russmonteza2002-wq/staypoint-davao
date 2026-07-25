@@ -1,9 +1,8 @@
 import rateLimit from 'express-rate-limit';
-import { env } from '../config/env';
 
 export const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: env.NODE_ENV === 'development' ? 5000 : 100, // Generous limit in dev mode
+  max: 5000,
   standardHeaders: true,
   legacyHeaders: false,
   message: {
@@ -14,7 +13,7 @@ export const apiLimiter = rateLimit({
 
 export const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: env.NODE_ENV === 'development' ? 1000 : 10, // Generous limit in dev mode
+  max: 1000, // Generous limit for testing
   standardHeaders: true,
   legacyHeaders: false,
   message: {
@@ -25,7 +24,7 @@ export const authLimiter = rateLimit({
 
 export const inquiryLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: env.NODE_ENV === 'development' ? 1000 : 5, // Generous limit in dev mode
+  max: 1000,
   standardHeaders: true,
   legacyHeaders: false,
   message: {
