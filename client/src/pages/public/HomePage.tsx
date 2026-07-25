@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Link, useOutletContext } from 'react-router-dom';
 import {
   Building2,
@@ -8,6 +8,8 @@ import {
   ArrowRight,
   MessageSquare,
   MapPin,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
 import { RoomService } from '../../services/roomService';
 import { Room, ApartmentInfo } from '../../types';
@@ -21,6 +23,7 @@ export const HomePage: React.FC = () => {
   const [featuredRooms, setFeaturedRooms] = useState<Room[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isInquiryModalOpen, setIsInquiryModalOpen] = useState(false);
+  const sliderRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const fetchFeatured = async () => {
@@ -35,6 +38,18 @@ export const HomePage: React.FC = () => {
     };
     fetchFeatured();
   }, []);
+
+  const handleScrollLeft = () => {
+    if (sliderRef.current) {
+      sliderRef.current.scrollBy({ left: -340, behavior: 'smooth' });
+    }
+  };
+
+  const handleScrollRight = () => {
+    if (sliderRef.current) {
+      sliderRef.current.scrollBy({ left: 340, behavior: 'smooth' });
+    }
+  };
 
   return (
     <div className="space-y-10 sm:space-y-24 pb-10 sm:pb-20">
@@ -130,8 +145,8 @@ export const HomePage: React.FC = () => {
       </section>
 
       {/* 3. FEATURED ROOMS SHOWCASE */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between gap-3 mb-6 sm:mb-10">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-4">
+        <div className="flex items-center justify-between gap-3 mb-2 sm:mb-6">
           <div>
             <span className="text-xs font-extrabold text-brand-600 uppercase tracking-widest">
               Available Units
@@ -140,26 +155,60 @@ export const HomePage: React.FC = () => {
               Featured Room Listings
             </h2>
           </div>
+
+          <div className="flex items-center gap-2">
+            {/* Slider Navigation Arrows */}
+            <div className="flex items-center gap-1.5 mr-2">
+              <button
+                onClick={handleScrollLeft}
+                className="p-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-100 text-slate-700 shadow-sm active:scale-95 transition-all"
+                title="Previous Slide"
+              >
+                <ChevronLeft className="w-5 h-5" />
+              </button>
+              <button
+                onClick={handleScrollRight}
+                className="p-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-100 text-slate-700 shadow-sm active:scale-95 transition-all"
+                title="Next Slide"
+              >
+                <ChevronRight className="w-5 h-5" />
+              </button>
+            </div>
+
+            <Link to="/rooms" className="hidden sm:inline-block">
+              <Button variant="outline" size="sm" rightIcon={<ArrowRight className="w-4 h-4" />}>
+                View All Catalog
+              </Button>
+            </Link>
+          </div>
+        </div>
+
+        {isLoading ? (
+          <div className="flex gap-4 overflow-hidden py-2">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="shrink-0 w-[82vw] sm:w-[350px] h-64 bg-slate-200 animate-pulse rounded-2xl" />
+            ))}
+          </div>
+        ) : (
+          <div
+            ref={sliderRef}
+            className="flex overflow-x-auto snap-x snap-mandatory scrollbar-none gap-4 sm:gap-6 py-2 px-1 scroll-smooth"
+          >
+            {featuredRooms.map((room) => (
+              <div key={room.id} className="snap-start shrink-0 w-[82vw] sm:w-[350px] lg:w-[380px] flex flex-col">
+                <RoomCard room={room} />
+              </div>
+            ))}
+          </div>
+        )}
+
+        <div className="text-center sm:hidden pt-2">
           <Link to="/rooms">
-            <Button variant="outline" size="sm" rightIcon={<ArrowRight className="w-4 h-4" />}>
+            <Button variant="outline" size="sm" className="w-full" rightIcon={<ArrowRight className="w-4 h-4" />}>
               View All Rooms Catalog
             </Button>
           </Link>
         </div>
-
-        {isLoading ? (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-8">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="h-64 sm:h-96 bg-slate-200 animate-pulse rounded-2xl sm:rounded-3xl" />
-            ))}
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-8">
-            {featuredRooms.map((room) => (
-              <RoomCard key={room.id} room={room} />
-            ))}
-          </div>
-        )}
       </section>
 
       {/* 4. MAP & LOCATION SECTION */}
