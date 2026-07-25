@@ -6,15 +6,18 @@ import { LoginInput } from '../validators/auth.validator';
 
 export class AuthService {
   public static async login(input: LoginInput) {
+    const cleanEmail = input.email ? input.email.trim().toLowerCase() : '';
+    const cleanPassword = input.password ? input.password.trim() : '';
+
     const admin = await prisma.admin.findUnique({
-      where: { email: input.email },
+      where: { email: cleanEmail },
     });
 
     if (!admin) {
       throw new UnauthorizedError('Invalid email or password credentials');
     }
 
-    const isPasswordValid = await comparePassword(input.password, admin.passwordHash);
+    const isPasswordValid = await comparePassword(cleanPassword, admin.passwordHash);
     if (!isPasswordValid) {
       throw new UnauthorizedError('Invalid email or password credentials');
     }
