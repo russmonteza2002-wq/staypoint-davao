@@ -118,7 +118,6 @@ export const InquiryModal: React.FC<InquiryModalProps> = ({
   const [pendingData, setPendingData] = useState<{
     referenceCode: string;
     userEmail: string;
-    verificationCode: string;
     accessToken: string;
   } | null>(null);
 
@@ -146,7 +145,6 @@ export const InquiryModal: React.FC<InquiryModalProps> = ({
       setPendingData({
         referenceCode: res.data.referenceCode,
         userEmail: res.data.userEmail,
-        verificationCode: res.data.verificationCode,
         accessToken: res.data.accessToken,
       });
 
@@ -236,20 +234,19 @@ export const InquiryModal: React.FC<InquiryModalProps> = ({
           </div>
 
           <div className="space-y-2">
-            <h3 className="text-xl font-extrabold text-slate-900">Enter Email Confirmation Code</h3>
-            <p className="text-xs text-slate-600 max-w-sm mx-auto">
-              Please confirm your active email address <strong>{pendingData.userEmail}</strong> by entering the 6-digit verification code below.
+            <h3 className="text-xl font-extrabold text-slate-900">Check Your Email Inbox</h3>
+            <p className="text-sm text-slate-600 max-w-sm mx-auto">
+              We sent a <strong>6-digit verification code</strong> to:<br />
+              <span className="font-bold text-brand-600">{pendingData.userEmail}</span>
             </p>
           </div>
 
-          {/* Verification Code Display Badge */}
-          <div className="p-4 bg-brand-950/90 text-white rounded-2xl border border-brand-500/40 space-y-1">
-            <span className="text-[10px] uppercase font-extrabold text-brand-300 tracking-widest">
-              Email Confirmation OTP Code
-            </span>
-            <div className="font-mono text-3xl font-extrabold tracking-widest text-brand-400">
-              {pendingData.verificationCode}
-            </div>
+          {/* Inbox Instruction Banner */}
+          <div className="p-4 bg-amber-50 border border-amber-200 rounded-2xl text-left space-y-1">
+            <p className="text-xs font-extrabold text-amber-700 uppercase tracking-wider">📬 Check Your Email Inbox</p>
+            <p className="text-xs text-amber-700 leading-relaxed">
+              Open your email app or Gmail, look for an email from <strong>Staypoint Davao</strong> with the subject <strong>"Your Inquiry Verification Code"</strong>, and enter the 6-digit code below.
+            </p>
           </div>
 
           <div className="max-w-xs mx-auto space-y-2 text-left">

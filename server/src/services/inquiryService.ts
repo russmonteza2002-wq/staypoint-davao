@@ -1,4 +1,5 @@
 import dns from 'dns';
+import { sendInquiryOtpEmail } from './emailService';
 import { prisma } from '../config/database';
 import { NotFoundError, UnauthorizedError, BadRequestError } from '../utils/errors';
 import {
@@ -77,11 +78,19 @@ export class InquiryService {
       },
     });
 
+    // Send OTP code to the user's REAL email inbox — never expose it in the API response
+    await sendInquiryOtpEmail({
+      to: data.userEmail,
+      userName: data.userName,
+      referenceCode: inquiry.referenceCode,
+      otpCode: verificationCode,
+    });
+
+    // Return only non-sensitive data — verificationCode is NOT included
     return {
       inquiryId: inquiry.id,
       referenceCode: inquiry.referenceCode,
       userEmail: inquiry.userEmail,
-      verificationCode, // Returned for instant verification UI step
       isVerified: false,
       accessToken: rawAccessToken,
     };
