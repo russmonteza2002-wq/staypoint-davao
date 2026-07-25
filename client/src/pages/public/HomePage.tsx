@@ -77,87 +77,84 @@ export const HomePage: React.FC = () => {
       </section>
       {/* 2. WHY CHOOSE US / FEATURES */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center space-y-4 mb-16">
+        <div className="text-center space-y-2 mb-6 sm:mb-12">
           <span className="text-xs font-extrabold text-brand-600 uppercase tracking-widest">
             Property Highlights
           </span>
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900">
+          <h2 className="text-2xl sm:text-4xl font-extrabold text-slate-900">
             Why Tenants Choose Staypoint Davao
           </h2>
-          <p className="text-slate-600 max-w-2xl mx-auto text-sm sm:text-base">
-            Designed for convenience, safety, and modern urban comfort.
-          </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-          <div className="p-8 bg-white rounded-3xl border border-slate-200/80 shadow-sm hover:shadow-xl transition-all space-y-4">
-            <div className="w-14 h-14 bg-brand-50 text-brand-600 rounded-2xl flex items-center justify-center font-bold">
-              <ShieldCheck className="w-7 h-7" />
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
+          <div className="p-4 sm:p-6 bg-white rounded-2xl border border-slate-200/80 shadow-sm space-y-2 text-center sm:text-left">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-brand-50 text-brand-600 rounded-xl flex items-center justify-center font-bold mx-auto sm:mx-0">
+              <ShieldCheck className="w-5 h-5 sm:w-6 sm:h-6" />
             </div>
-            <h3 className="font-extrabold text-xl text-slate-900">24/7 Security & CCTV</h3>
-            <p className="text-slate-600 text-sm leading-relaxed">
-              Complete peace of mind with round-the-clock security monitoring and secure access gates.
+            <h3 className="font-extrabold text-sm sm:text-lg text-slate-900">24/7 Security &amp; CCTV</h3>
+            <p className="text-slate-600 text-xs sm:text-sm leading-relaxed hidden sm:block">
+              Round-the-clock monitoring and secure entry.
             </p>
           </div>
 
-          <div className="p-8 bg-white rounded-3xl border border-slate-200/80 shadow-sm hover:shadow-xl transition-all space-y-4">
-            <div className="w-14 h-14 bg-sky-50 text-sky-600 rounded-2xl flex items-center justify-center font-bold">
-              <Wifi className="w-7 h-7" />
+          <div className="p-4 sm:p-6 bg-white rounded-2xl border border-slate-200/80 shadow-sm space-y-2 text-center sm:text-left">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-sky-50 text-sky-600 rounded-xl flex items-center justify-center font-bold mx-auto sm:mx-0">
+              <Wifi className="w-5 h-5 sm:w-6 sm:h-6" />
             </div>
-            <h3 className="font-extrabold text-xl text-slate-900">High-Speed WiFi</h3>
-            <p className="text-slate-600 text-sm leading-relaxed">
-              Fiber optic internet connection ready in every room, perfect for remote working and streaming.
+            <h3 className="font-extrabold text-sm sm:text-lg text-slate-900">High-Speed WiFi</h3>
+            <p className="text-slate-600 text-xs sm:text-sm leading-relaxed hidden sm:block">
+              Fiber internet connection ready in every room.
             </p>
           </div>
 
-          <div className="p-8 bg-white rounded-3xl border border-slate-200/80 shadow-sm hover:shadow-xl transition-all space-y-4">
-            <div className="w-14 h-14 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center font-bold">
-              <MessageSquare className="w-7 h-7" />
+          <div className="p-4 sm:p-6 bg-white rounded-2xl border border-slate-200/80 shadow-sm space-y-2 text-center sm:text-left">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center font-bold mx-auto sm:mx-0">
+              <MessageSquare className="w-5 h-5 sm:w-6 sm:h-6" />
             </div>
-            <h3 className="font-extrabold text-xl text-slate-900">Direct Inquiry Messaging</h3>
-            <p className="text-slate-600 text-sm leading-relaxed">
-              Submit questions and receive manager responses directly on the website using tracking codes.
+            <h3 className="font-extrabold text-sm sm:text-lg text-slate-900">Direct Inquiries</h3>
+            <p className="text-slate-600 text-xs sm:text-sm leading-relaxed hidden sm:block">
+              Direct tracking and message thread with owner.
             </p>
           </div>
 
-          <div className="p-8 bg-white rounded-3xl border border-slate-200/80 shadow-sm hover:shadow-xl transition-all space-y-4">
-            <div className="w-14 h-14 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center font-bold">
-              <MapPin className="w-7 h-7" />
+          <div className="p-4 sm:p-6 bg-white rounded-2xl border border-slate-200/80 shadow-sm space-y-2 text-center sm:text-left">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center font-bold mx-auto sm:mx-0">
+              <MapPin className="w-5 h-5 sm:w-6 sm:h-6" />
             </div>
-            <h3 className="font-extrabold text-xl text-slate-900">Prime Location</h3>
-            <p className="text-slate-600 text-sm leading-relaxed">
-              Situated in Poblacion District, Davao City within walking distance of transit, markets, and malls.
+            <h3 className="font-extrabold text-sm sm:text-lg text-slate-900">Prime Location</h3>
+            <p className="text-slate-600 text-xs sm:text-sm leading-relaxed hidden sm:block">
+              Poblacion District, Davao near transit &amp; malls.
             </p>
           </div>
         </div>
       </section>
 
-      {/* 4. FEATURED ROOMS SHOWCASE */}
+      {/* 3. FEATURED ROOMS SHOWCASE */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between gap-4 mb-12">
+        <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between gap-3 mb-6 sm:mb-10">
           <div>
             <span className="text-xs font-extrabold text-brand-600 uppercase tracking-widest">
               Available Units
             </span>
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 mt-1">
+            <h2 className="text-2xl sm:text-4xl font-extrabold text-slate-900 mt-0.5">
               Featured Room Listings
             </h2>
           </div>
           <Link to="/rooms">
-            <Button variant="outline" rightIcon={<ArrowRight className="w-4 h-4" />}>
+            <Button variant="outline" size="sm" rightIcon={<ArrowRight className="w-4 h-4" />}>
               View All Rooms Catalog
             </Button>
           </Link>
         </div>
 
         {isLoading ? (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-8">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="h-96 bg-slate-200 animate-pulse rounded-3xl" />
+              <div key={i} className="h-64 sm:h-96 bg-slate-200 animate-pulse rounded-2xl sm:rounded-3xl" />
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-8">
             {featuredRooms.map((room) => (
               <RoomCard key={room.id} room={room} />
             ))}
@@ -165,38 +162,15 @@ export const HomePage: React.FC = () => {
         )}
       </section>
 
-      {/* 5. MAP & LOCATION SECTION */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
-        <div className="text-center space-y-3">
+      {/* 4. MAP & LOCATION SECTION */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-4 sm:space-y-6">
+        <div className="text-center space-y-1 sm:space-y-2">
           <span className="text-xs font-extrabold text-brand-600 uppercase tracking-widest">
-            Map & Directions
+            Map &amp; Directions
           </span>
-          <h2 className="text-3xl font-extrabold text-slate-900">Apartment Location</h2>
+          <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900">Apartment Location</h2>
         </div>
         <ApartmentMap info={siteInfo} />
-      </section>
-
-      {/* 6. CTA BANNER */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="bg-slate-900 text-white rounded-3xl p-10 sm:p-16 border border-slate-800 shadow-2xl relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-8">
-          <div className="space-y-4 max-w-xl text-center md:text-left z-10">
-            <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight">
-              Ready to Schedule a Viewing?
-            </h2>
-            <p className="text-slate-400 text-base leading-relaxed">
-              Submit your inquiry online now. Our property manager will review your preferred date and reply back directly on the portal.
-            </p>
-          </div>
-          <div className="z-10 flex flex-col sm:flex-row gap-4 w-full md:w-auto">
-            <Button
-              size="lg"
-              onClick={() => setIsInquiryModalOpen(true)}
-              leftIcon={<MessageSquare className="w-5 h-5" />}
-            >
-              Submit General Inquiry
-            </Button>
-          </div>
-        </div>
       </section>
 
       <InquiryModal
