@@ -14,11 +14,11 @@ import siteRoutes from './routes/siteRoutes';
 
 const app: Application = express();
 
-// Security Middlewares
+// Security Middlewares - Permit Vercel & client origins
 app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
 app.use(
   cors({
-    origin: [env.CLIENT_URL, 'http://localhost:5173', 'http://127.0.0.1:5173'],
+    origin: true,
     credentials: true,
   })
 );
