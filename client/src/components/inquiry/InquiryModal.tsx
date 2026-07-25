@@ -232,7 +232,7 @@ export const InquiryModal: React.FC<InquiryModalProps> = ({
   return (
     <Modal isOpen={isOpen} onClose={handleClose} title={roomTitle ? `Inquire About ${roomTitle}` : 'Submit Property Inquiry'} maxWidth="lg">
       {step === 'SUCCESS' && pendingData ? (
-        <div className="space-y-6 text-center py-4">
+        <div className="space-y-5 text-center py-4">
           <div className="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto shadow-inner">
             <CheckCircle className="w-10 h-10" />
           </div>
@@ -240,13 +240,13 @@ export const InquiryModal: React.FC<InquiryModalProps> = ({
           <div className="space-y-2">
             <h3 className="text-xl font-extrabold text-slate-900">Email Verified & Inquiry Sent!</h3>
             <p className="text-sm text-slate-600 max-w-md mx-auto">
-              Your email address has been verified and your inquiry lead is active. Save your unique reference code below to track direct replies from the property manager.
+              Your inquiry has been submitted and is now active. The property manager will reply shortly.
             </p>
           </div>
 
           {/* Reference Code Box */}
           <div className="p-4 bg-slate-900 text-white rounded-2xl border border-slate-800 space-y-2">
-            <span className="text-xs uppercase font-bold text-slate-400 tracking-wider">Your Verified Reference Code</span>
+            <span className="text-xs uppercase font-bold text-slate-400 tracking-wider">Your Reference Code</span>
             <div className="flex items-center justify-center gap-3">
               <span className="font-mono text-2xl font-extrabold tracking-widest text-brand-400">
                 {pendingData.referenceCode}
@@ -264,10 +264,25 @@ export const InquiryModal: React.FC<InquiryModalProps> = ({
             </div>
           </div>
 
-          <div className="pt-2 flex flex-col gap-2">
-            <a href={`/track-inquiry?code=${pendingData.referenceCode}&token=${pendingData.accessToken}`}>
+          {/* ⚠️ Important Notice — Save your code */}
+          <div className="p-4 bg-amber-50 border-2 border-amber-300 rounded-2xl text-left space-y-2">
+            <p className="text-sm font-extrabold text-amber-800 flex items-center gap-2">
+              📌 Important — Please Save Your Reference Code!
+            </p>
+            <p className="text-xs text-amber-700 leading-relaxed">
+              You will need this code <strong>to view replies from the manager</strong> and to send follow-up messages.
+              <br /><br />
+              📸 <strong>Take a screenshot</strong> of this screen, or <strong>write it down</strong> somewhere safe.
+              <br /><br />
+              You can also track your inquiry anytime at:<br />
+              <strong>staypoint-davao.vercel.app/track-inquiry</strong>
+            </p>
+          </div>
+
+          <div className="pt-1 flex flex-col gap-2">
+            <a href={`/track-inquiry?code=${pendingData.referenceCode}`}>
               <Button variant="primary" className="w-full">
-                View Inquiry Thread & Status
+                View My Inquiry Thread
               </Button>
             </a>
             <Button variant="outline" onClick={handleClose} className="w-full">
