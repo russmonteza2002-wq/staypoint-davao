@@ -1,0 +1,180 @@
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum AdminRole {
+  SUPER_ADMIN
+  ADMIN
+}
+
+enum RoomStatus {
+  AVAILABLE
+  RESERVED
+  OCCUPIED
+}
+
+enum InquiryStatus {
+  NEW
+  REPLIED
+  VIEWING_SCHEDULED
+  CLOSED
+}
+
+enum SenderType {
+  ADMIN
+  USER
+}
+
+model Admin {
+  id           String      @id @default(uuid()) @db.Uuid
+  name         String      @db.VarChar(100)
+  email        String      @unique @db.VarChar(150)
+  passwordHash String      @map("password_hash") @db.VarChar(255)
+  role         AdminRole   @default(ADMIN)
+  createdAt    DateTime    @default(now()) @map("created_at")
+  updatedAt    DateTime    @updatedAt @map("updated_at")
+
+  replies      Reply[]
+  activityLogs ActivityLog[]
+
+  @@map("admins")
+}
+
+model Room {
+  id            String       @id @default(uuid()) @db.Uuid
+  roomNumber    String       @unique @map("room_number") @db.VarChar(20)
+  title         String       @db.VarChar(150)
+  slug          String       @unique @db.VarChar(180)
+  description   String       @db.Text
+  pricePerMonth Decimal      @map("price_per_month") @db.Decimal(10, 2)
+  depositAmount Decimal      @map("deposit_amount") @db.Decimal(10, 2)
+  sizeSqm       Float        @map("size_sqm")
+  floor         Int
+  bedroomCount  Int          @default(1) @map("bedroom_count")
+  bathroomCount Int          @default(1) @map("bathroom_count")
+  status        RoomStatus   @default(AVAILABLE)
+  isFeatured    Boolean      @default(false) @map("is_featured")
+  createdAt     DateTime     @default(now()) @map("created_at")
+  updatedAt     DateTime     @updatedAt @map("updated_at")
+
+  images        RoomImage[]
+  amenities     RoomAmenity[]
+  inquiries     Inquiry[]
+
+  @@index([status])
+  @@index([pricePerMonth])
+  @@map("rooms")
+}
+
+model RoomImage {
+  id           String   @id @default(uuid()) @db.Uuid
+  roomId       String   @map("room_id") @db.Uuid
+  imageUrl     String   @map("image_url") @db.VarChar(500)
+  thumbnailUrl String   @map("thumbnail_url") @db.VarChar(500)
+  caption      String?  @db.VarChar(100)
+  isPrimary    Boolean  @default(false) @map("is_primary")
+  sortOrder    Int      @default(0) @map("sort_order")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  room         Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
+
+  @@index([roomId])
+  @@map("room_images")
+}
+
+model Amenity {
+  id    String        @id @default(uuid()) @db.Uuid
+  name  String        @unique @db.VarChar(50)
+  icon  String?       @db.VarChar(50)
+  rooms RoomAmenity[]
+
+  @@map("amenities")
+}
+
+model RoomAmenity {
+  roomId    String  @map("room_id") @db.Uuid
+  amenityId String  @map("amenity_id") @db.Uuid
+
+  room      Room    @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  amenity   Amenity @relation(fields: [amenityId], references: [id], onDelete: Cascade)
+
+  @@id([roomId, amenityId])
+  @@map("room_amenities")
+}
+
+model Inquiry {
+  id                   String        @id @default(uuid()) @db.Uuid
+  referenceCode        String        @unique @map("reference_code") @db.VarChar(20)
+  accessTokenHash      String        @map("access_token_hash") @db.VarChar(255)
+  roomId               String?       @map("room_id") @db.Uuid
+  userName             String        @map("user_name") @db.VarChar(100)
+  userEmail            String        @map("user_email") @db.VarChar(150)
+  userPhone            String?       @map("user_phone") @db.VarChar(30)
+  message              String        @db.Text
+  preferredViewingDate DateTime?     @map("preferred_viewing_date")
+  status               InquiryStatus @default(NEW)
+  createdAt            DateTime      @default(now()) @map("created_at")
+  updatedAt            DateTime      @updatedAt @map("updated_at")
+
+  room                 Room?         @relation(fields: [roomId], references: [id], onDelete: SetNull)
+  replies              Reply[]
+
+  @@index([referenceCode])
+  @@index([status])
+  @@map("inquiries")
+}
+
+model Reply {
+  id         String     @id @default(uuid()) @db.Uuid
+  inquiryId  String     @map("inquiry_id") @db.Uuid
+  adminId    String?    @map("admin_id") @db.Uuid
+  senderType SenderType @map("sender_type")
+  senderName String     @map("sender_name") @db.VarChar(100)
+  message    String     @db.Text
+  createdAt  DateTime   @default(now()) @map("created_at")
+
+  inquiry    Inquiry    @relation(fields: [inquiryId], references: [id], onDelete: Cascade)
+  admin      Admin?     @relation(fields: [adminId], references: [id], onDelete: SetNull)
+
+  @@index([inquiryId])
+  @@map("replies")
+}
+
+model ApartmentInformation {
+  id                 String   @id @default(uuid()) @db.Uuid
+  name               String   @db.VarChar(150)
+  tagline            String?  @db.VarChar(255)
+  description        String   @db.Text
+  address            String   @db.VarChar(255)
+  city               String   @db.VarChar(100)
+  latitude           Float
+  longitude          Float
+  googleMapsPlaceId  String?  @map("google_maps_place_id") @db.VarChar(100)
+  googleMapsEmbedUrl String?  @map("google_maps_embed_url") @db.Text
+  phoneNumber        String   @map("phone_number") @db.VarChar(30)
+  email              String   @db.VarChar(150)
+  facebookUrl        String?  @map("facebook_url") @db.VarChar(255)
+  updatedAt          DateTime @updatedAt @map("updated_at")
+
+  @@map("apartment_information")
+}
+
+model ActivityLog {
+  id        String   @id @default(uuid()) @db.Uuid
+  adminId   String   @map("admin_id") @db.Uuid
+  action    String   @db.VarChar(100)
+  details   String?  @db.Text
+  ipAddress String?  @map("ip_address") @db.VarChar(45)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  admin     Admin    @relation(fields: [adminId], references: [id], onDelete: Cascade)
+
+  @@index([adminId])
+  @@map("activity_logs")
+}
