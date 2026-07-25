@@ -20,7 +20,7 @@ export const Navbar: React.FC<{ phoneNumber?: string }> = ({ phoneNumber = '+63 
   return (
     <header className="sticky top-0 z-40 w-full glass-panel border-b border-slate-200/80">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-20">
+        <div className="flex items-center justify-between h-14 sm:h-20">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-3 group">
             <div className="p-2.5 bg-brand-600 text-white rounded-xl shadow-md shadow-brand-600/20 group-hover:scale-105 transition-transform">

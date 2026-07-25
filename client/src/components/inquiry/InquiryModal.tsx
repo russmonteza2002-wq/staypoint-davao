@@ -444,7 +444,7 @@ export const InquiryModal: React.FC<InquiryModalProps> = ({
 
       /* ── FORM ───────────────────────────────────────────────────────── */
       ) : (
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-3 sm:space-y-4">
           <Input
             label="Full Name"
             placeholder="John Doe"
@@ -453,7 +453,7 @@ export const InquiryModal: React.FC<InquiryModalProps> = ({
             error={errors.userName?.message}
           />
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
             <Input
               label="Email Address"
               type="email"
@@ -480,14 +480,14 @@ export const InquiryModal: React.FC<InquiryModalProps> = ({
             error={errors.preferredViewingDate?.message}
           />
 
-          <div className="flex flex-col gap-1.5">
+          <div className="flex flex-col gap-1">
             <label className="text-xs font-semibold text-slate-700 uppercase tracking-wider">
               Your Message or Specific Questions
             </label>
             <textarea
-              rows={4}
+              rows={2}
               placeholder="I am interested in viewing this room. What are the move-in requirements?"
-              className="w-full rounded-xl border border-slate-300 p-3 text-sm text-slate-900 bg-white focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
+              className="w-full rounded-xl border border-slate-300 p-2.5 sm:p-3 text-sm text-slate-900 bg-white focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
               {...register('message')}
             />
             {errors.message && (
@@ -495,11 +495,11 @@ export const InquiryModal: React.FC<InquiryModalProps> = ({
             )}
           </div>
 
-          <div className="pt-2">
+          <div className="pt-1">
             <Button
               type="submit"
               variant="primary"
-              className="w-full"
+              className="w-full py-2.5 sm:py-3 text-sm"
               isLoading={isSubmitting}
               leftIcon={<Send className="w-4 h-4" />}
             >
