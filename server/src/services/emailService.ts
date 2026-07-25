@@ -1,7 +1,13 @@
-import { Resend } from 'resend';
+import nodemailer from 'nodemailer';
 
-// Initialize Resend client with API key from environment variable
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Initialize Gmail SMTP transporter
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.GMAIL_USER,
+    pass: process.env.GMAIL_APP_PASSWORD,
+  },
+});
 
 /**
  * Sends a 6-digit OTP verification email to the tenant's inbox.
@@ -15,9 +21,9 @@ export async function sendInquiryOtpEmail(params: {
 }): Promise<void> {
   const { to, userName, referenceCode, otpCode } = params;
 
-  await resend.emails.send({
-    from: 'Staypoint Davao <onboarding@resend.dev>',
-    to: [to],
+  await transporter.sendMail({
+    from: `"Staypoint Davao" <${process.env.GMAIL_USER}>`,
+    to,
     subject: `Your Inquiry Verification Code — ${otpCode}`,
     html: `
       <!DOCTYPE html>
@@ -65,7 +71,7 @@ export async function sendInquiryOtpEmail(params: {
                     </div>
 
                     <!-- Reference Code -->
-                    <div style="background:#f1f5f9;border-radius:12px;padding:16px 20px;margin-bottom:28px;display:flex;">
+                    <div style="background:#f1f5f9;border-radius:12px;padding:16px 20px;margin-bottom:28px;">
                       <p style="margin:0;font-size:12px;color:#64748b;">
                         <strong>Inquiry Reference:</strong>&nbsp;
                         <span style="font-family:'Courier New',monospace;font-weight:700;color:#1e40af;">${referenceCode}</span>
@@ -107,12 +113,11 @@ export async function sendAdminReplyEmail(params: {
 }): Promise<void> {
   const { to, userName, referenceCode, replyMessage } = params;
 
-  // Link goes directly to the thread by reference code only — no token needed to view
   const trackUrl = `https://staypoint-davao.vercel.app/track-inquiry?code=${referenceCode}`;
 
-  await resend.emails.send({
-    from: 'Staypoint Davao <onboarding@resend.dev>',
-    to: [to],
+  await transporter.sendMail({
+    from: `"Staypoint Davao" <${process.env.GMAIL_USER}>`,
+    to,
     subject: `📩 Property Manager Replied to Your Inquiry — ${referenceCode}`,
     html: `
       <!DOCTYPE html>
