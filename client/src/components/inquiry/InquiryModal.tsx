@@ -249,15 +249,30 @@ export const InquiryModal: React.FC<InquiryModalProps> = ({
             </p>
           </div>
 
-          <div className="max-w-xs mx-auto space-y-2 text-left">
-            <Input
-              label="6-Digit Verification Code"
-              placeholder="e.g. 123456"
-              leftIcon={<KeyRound className="w-4 h-4 text-slate-500" />}
-              value={enteredOtp}
-              onChange={(e) => setEnteredOtp(e.target.value)}
-              className="text-center font-mono text-lg font-bold tracking-widest"
-            />
+          {/* OTP Code Input — large, centered, and clearly visible */}
+          <div className="space-y-2">
+            <label className="block text-xs font-extrabold text-slate-700 uppercase tracking-wider text-center">
+              Enter Your 6-Digit Code
+            </label>
+            <div className="relative flex items-center justify-center">
+              <KeyRound className="absolute left-4 w-5 h-5 text-slate-400 pointer-events-none" />
+              <input
+                type="text"
+                inputMode="numeric"
+                maxLength={6}
+                placeholder="_ _ _ _ _ _"
+                value={enteredOtp}
+                onChange={(e) => setEnteredOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                className="w-full rounded-2xl border-2 border-brand-300 bg-white py-4 pl-12 pr-4 text-center text-2xl font-extrabold tracking-[0.5em] text-slate-900 placeholder:text-slate-300 shadow-md focus:border-brand-500 focus:outline-none focus:ring-4 focus:ring-brand-500/20 transition-all"
+                autoFocus
+                autoComplete="one-time-code"
+              />
+            </div>
+            {enteredOtp.length > 0 && enteredOtp.length < 6 && (
+              <p className="text-xs text-center text-amber-600 font-semibold">
+                {6 - enteredOtp.length} more digit{6 - enteredOtp.length !== 1 ? 's' : ''} needed
+              </p>
+            )}
           </div>
 
           <div className="space-y-2 pt-2">
